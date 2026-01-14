@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers - QommerceHub</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dashboard">
+    <nav class="navbar">
+        <div class="navbar-brand">🚀 QommerceHub</div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <a href="dashboard.html" style="color: var(--gray-700); text-decoration: none;">Inventory</a>
+            <a href="customers.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Customers</a>
+            <a href="orders.html" style="color: var(--gray-700); text-decoration: none;">Orders</a>
+            <a href="analytics.html" style="color: var(--gray-700); text-decoration: none;">Analytics</a>
+            <a href="barcode-scanner.html" style="color: var(--gray-700); text-decoration: none;">Scanner</a>
+            <span class="store-name" id="storeName"></span>
+            <button class="btn-logout" onclick="handleLogout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">👥 Customer Management</h2>
+                <button class="btn btn-success" onclick="openAddModal()">+ Add Customer</button>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="🔍 Search customers by name or email..."
+                       oninput="handleSearch()">
+            </div>
+
+            <div id="customersTable">
+                <div class="loading">Loading customers...</div>
+            </div>
+
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Customer Modal -->
+    <div id="customerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Customer</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="customerForm" onsubmit="handleCustomerSubmit(event)">
+                <input type="hidden" id="customerId">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="customerName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="customerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="customerPhone">
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea id="customerAddress" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Save Customer</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="customers.js"></script>
+</body>
+</html>

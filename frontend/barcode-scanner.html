@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner - QommerceHub</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+</head>
+<body class="dashboard">
+    <nav class="navbar">
+        <div class="navbar-brand">🚀 QommerceHub</div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <a href="dashboard.html" style="color: var(--gray-700); text-decoration: none;">Inventory</a>
+            <a href="customers.html" style="color: var(--gray-700); text-decoration: none;">Customers</a>
+            <a href="orders.html" style="color: var(--gray-700); text-decoration: none;">Orders</a>
+            <a href="analytics.html" style="color: var(--gray-700); text-decoration: none;">Analytics</a>
+            <a href="barcode-scanner.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Scanner</a>
+            <span class="store-name" id="storeName"></span>
+            <button class="btn-logout" onclick="handleLogout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">📱 Barcode Scanner</h2>
+                <button id="scanBtn" class="btn btn-success" onclick="startScanner()">Start Scanning</button>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <p style="color: var(--gray-600);">Scan product barcodes to quickly add or lookup inventory items.</p>
+            </div>
+
+            <!-- Scanner View -->
+            <div id="scannerContainer" style="display: none; position: relative;">
+                <div id="interactive" class="viewport" style="width: 100%; max-width: 640px; height: 480px; margin: 0 auto; border: 2px solid var(--primary); border-radius: 8px; overflow: hidden;"></div>
+                <button class="btn" style="background: var(--danger); color: white; margin-top: 15px;" onclick="stopScanner()">Stop Scanner</button>
+            </div>
+
+            <!-- Manual Input -->
+            <div id="manualInput" style="margin-top: 20px;">
+                <label><strong>Or Enter Barcode Manually:</strong></label>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <input type="text" id="barcodeInput" placeholder="Enter barcode or SKU" style="flex: 1; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px;">
+                    <button class="btn btn-success" onclick="lookupBarcode()">Lookup</button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="results" style="margin-top: 30px; display: none;">
+                <h3 style="color: var(--primary);">Scanned Product:</h3>
+                <div id="productInfo" style="background: var(--gray-50); padding: 20px; border-radius: 8px; margin-top: 15px;"></div>
+            </div>
+
+            <!-- Scan History -->
+            <div id="historySection" style="margin-top: 30px; display: none;">
+                <h3 style="color: var(--gray-700); margin-bottom: 15px;">Scan History</h3>
+                <div id="scanHistory"></div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">⚡ Quick Actions</h2>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <button class="btn" style="background: var(--success); color: white; padding: 15px;" onclick="window.location.href='dashboard.html'">
+                    📦 Add to Inventory
+                </button>
+                <button class="btn" style="background: var(--info); color: white; padding: 15px;" onclick="window.location.href='orders.html'">
+                    🛒 Create Order
+                </button>
+                <button class="btn" style="background: var(--warning); color: white; padding: 15px;" onclick="exportHistory()">
+                    📊 Export History
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="barcode-scanner.js"></script>
+</body>
+</html>

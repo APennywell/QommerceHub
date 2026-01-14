@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - QommerceHub</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dashboard">
+    <nav class="navbar">
+        <div class="navbar-brand">🚀 QommerceHub</div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <a href="dashboard.html" style="color: var(--gray-700); text-decoration: none;">Inventory</a>
+            <a href="customers.html" style="color: var(--gray-700); text-decoration: none;">Customers</a>
+            <a href="orders.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Orders</a>
+            <a href="analytics.html" style="color: var(--gray-700); text-decoration: none;">Analytics</a>
+            <a href="barcode-scanner.html" style="color: var(--gray-700); text-decoration: none;">Scanner</a>
+            <span class="store-name" id="storeName"></span>
+            <button class="btn-logout" onclick="handleLogout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">📦 Order Management</h2>
+                <button class="btn btn-success" onclick="openCreateOrderModal()">+ New Order</button>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <select id="statusFilter" onchange="handleStatusFilter()" style="padding: 10px; border-radius: 6px; border: 2px solid var(--gray-200);">
+                    <option value="">All Orders</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+
+            <div id="ordersTable">
+                <div class="loading">Loading orders...</div>
+            </div>
+
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <!-- Create Order Modal -->
+    <div id="createOrderModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>Create New Order</h2>
+                <button class="modal-close" onclick="closeCreateOrderModal()">&times;</button>
+            </div>
+            <form id="orderForm" onsubmit="handleOrderSubmit(event)">
+                <div class="form-group">
+                    <label>Customer *</label>
+                    <select id="orderCustomer" required>
+                        <option value="">Select Customer</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Order Items *</label>
+                    <div id="orderItems">
+                        <!-- Items will be added here -->
+                    </div>
+                    <button type="button" class="btn" style="background: var(--primary); color: white;" onclick="addOrderItem()">+ Add Item</button>
+                </div>
+
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="orderNotes" rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <strong>Total: $<span id="orderTotal">0.00</span></strong>
+                </div>
+
+                <button type="submit" class="btn-primary">Create Order</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Order Details</h2>
+                <button class="modal-close" onclick="closeOrderDetailsModal()">&times;</button>
+            </div>
+            <div id="orderDetailsContent">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Process Payment</h2>
+                <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+            </div>
+            <div id="paymentContent">
+                <div style="padding: 20px;">
+                    <div style="background: var(--gray-50); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="margin: 0 0 10px 0;">Order Summary</h3>
+                        <p style="margin: 5px 0;"><strong>Order ID:</strong> <span id="paymentOrderId"></span></p>
+                        <p style="margin: 5px 0;"><strong>Customer:</strong> <span id="paymentCustomer"></span></p>
+                        <p style="margin: 5px 0; font-size: 20px; color: var(--primary);"><strong>Amount:</strong> $<span id="paymentAmount"></span></p>
+                    </div>
+
+                    <div style="background: var(--info); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <p style="margin: 0;"><strong>ℹ️ Demo Mode</strong></p>
+                        <p style="margin: 5px 0 0 0; font-size: 14px;">This is a demo payment interface. In production, this would integrate with Stripe Elements for secure card processing.</p>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label><strong>Payment Method:</strong></label>
+                        <select id="paymentMethod" style="width: 100%; padding: 10px; margin-top: 10px; border: 2px solid var(--gray-200); border-radius: 8px;">
+                            <option value="card">Credit Card (Demo)</option>
+                            <option value="cash">Cash</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                        </select>
+                    </div>
+
+                    <div id="cardDemo" style="padding: 15px; background: var(--gray-50); border-radius: 8px; margin-bottom: 20px;">
+                        <p style="color: var(--gray-600); margin: 0; font-size: 14px;">Stripe Elements would appear here in production for secure card input.</p>
+                        <div style="margin-top: 10px; padding: 10px; background: white; border: 2px solid var(--gray-300); border-radius: 6px; color: var(--gray-400);">
+                            [Stripe Card Element]
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success" style="width: 100%;" onclick="processPayment()">Process Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="orders.js"></script>
+</body>
+</html>

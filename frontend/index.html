@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QommerceHub - Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <h1>🚀 QommerceHub</h1>
+                <p>Enterprise E-Commerce Platform</p>
+            </div>
+
+            <div id="loginForm" class="form-container">
+                <h2>Sign In</h2>
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Sign In</button>
+                </form>
+                <p class="form-footer">
+                    Don't have an account? <a href="#" onclick="showSignup()">Sign Up</a>
+                </p>
+            </div>
+
+            <div id="signupForm" class="form-container" style="display: none;">
+                <h2>Create Account</h2>
+                <form onsubmit="handleSignup(event)">
+                    <div class="form-group">
+                        <label>Store Name</label>
+                        <input type="text" id="signupStoreName" placeholder="My Awesome Store" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="signupEmail" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password (min 8 characters)</label>
+                        <input type="password" id="signupPassword" placeholder="••••••••" minlength="8" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Create Account</button>
+                </form>
+                <p class="form-footer">
+                    Already have an account? <a href="#" onclick="showLogin()">Sign In</a>
+                </p>
+            </div>
+
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>

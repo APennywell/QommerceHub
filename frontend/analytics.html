@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - QommerceHub</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="dashboard">
+    <nav class="navbar">
+        <div class="navbar-brand">🚀 QommerceHub</div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <a href="dashboard.html" style="color: var(--gray-700); text-decoration: none;">Inventory</a>
+            <a href="customers.html" style="color: var(--gray-700); text-decoration: none;">Customers</a>
+            <a href="orders.html" style="color: var(--gray-700); text-decoration: none;">Orders</a>
+            <a href="analytics.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Analytics</a>
+            <a href="barcode-scanner.html" style="color: var(--gray-700); text-decoration: none;">Scanner</a>
+            <span class="store-name" id="storeName"></span>
+            <button class="btn-logout" onclick="handleLogout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Revenue Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">💰</div>
+                <div class="stat-info">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value" id="totalRevenue">$0.00</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">📦</div>
+                <div class="stat-info">
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value" id="totalOrders">0</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">📊</div>
+                <div class="stat-info">
+                    <div class="stat-label">Avg Order Value</div>
+                    <div class="stat-value" id="avgOrderValue">$0.00</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">⚠️</div>
+                <div class="stat-info">
+                    <div class="stat-label">Low Stock Items</div>
+                    <div class="stat-value" id="lowStockCount">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📈 Sales Trend (Last 30 Days)</h2>
+                    <select id="periodFilter" onchange="changePeriod()" style="padding: 8px; border-radius: 6px; border: 2px solid var(--gray-200);">
+                        <option value="7">Last 7 Days</option>
+                        <option value="30" selected>Last 30 Days</option>
+                        <option value="90">Last 90 Days</option>
+                    </select>
+                </div>
+                <div style="padding: 20px;">
+                    <canvas id="salesChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">📊 Order Status</h2>
+                </div>
+                <div style="padding: 20px;">
+                    <canvas id="statusChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🏆 Top Selling Products</h2>
+                </div>
+                <div style="padding: 20px;">
+                    <div id="topProductsList"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">👥 Top Customers</h2>
+                </div>
+                <div style="padding: 20px;">
+                    <div id="topCustomersList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alert -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">⚠️ Low Stock Alerts</h2>
+            </div>
+            <div id="lowStockTable" style="padding: 20px;">
+                <div class="loading">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Export Reports -->
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">📊 Export Reports</h2>
+            </div>
+            <div style="padding: 20px;">
+                <p style="color: var(--gray-600); margin-bottom: 20px;">Download comprehensive reports for your business analysis.</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <button class="btn" style="background: var(--success); color: white; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="downloadSalesReport()">
+                        <span style="font-size: 24px;">📈</span>
+                        <div style="text-align: left;">
+                            <div style="font-weight: 600;">Sales Report (CSV)</div>
+                            <div style="font-size: 12px; opacity: 0.9;">All orders with customer details</div>
+                        </div>
+                    </button>
+                    <button class="btn" style="background: var(--info); color: white; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="downloadInventoryReport()">
+                        <span style="font-size: 24px;">📦</span>
+                        <div style="text-align: left;">
+                            <div style="font-weight: 600;">Inventory Report (Excel)</div>
+                            <div style="font-size: 12px; opacity: 0.9;">Stock levels with formatting</div>
+                        </div>
+                    </button>
+                    <button class="btn" style="background: var(--warning); color: white; padding: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="downloadCustomersReport()">
+                        <span style="font-size: 24px;">👥</span>
+                        <div style="text-align: left;">
+                            <div style="font-weight: 600;">Customers Report (CSV)</div>
+                            <div style="font-size: 12px; opacity: 0.9;">Customer lifetime value analysis</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="analytics.js"></script>
+</body>
+</html>
