@@ -13,6 +13,7 @@ const helmet = require("helmet");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
 const path = require("path");
+const { apiLimiter } = require("./middleware/rateLimiter");
 const app = express();
 
 // Security middleware
@@ -21,6 +22,9 @@ app.use(helmet({
 }));
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+// Apply rate limiting to all API routes
+app.use('/api/', apiLimiter);
 
 // Serve static files (uploaded images and reports)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

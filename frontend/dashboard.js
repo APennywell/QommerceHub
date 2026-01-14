@@ -52,6 +52,12 @@ async function loadInventory(page = 1, search = '') {
         });
 
         const response = await apiRequest(`/api/inventory?${params}`);
+
+        if (!response) {
+            // Session expired or unauthorized
+            return;
+        }
+
         const data = await response.json();
 
         if (data.items) {
@@ -61,8 +67,15 @@ async function loadInventory(page = 1, search = '') {
         }
     } catch (error) {
         console.error('Error loading inventory:', error);
+        const errorMessage = error.message.includes('Failed to fetch')
+            ? 'Cannot connect to server. Please check your internet connection.'
+            : 'Failed to load inventory. Please refresh the page.';
         document.getElementById('inventoryTable').innerHTML =
-            '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Error loading inventory</p></div>';
+            `<div class="empty-state">
+                <div class="empty-state-icon">⚠️</div>
+                <p>${errorMessage}</p>
+                <button class="btn btn-primary" onclick="loadInventory()">Try Again</button>
+            </div>`;
     }
 }
 

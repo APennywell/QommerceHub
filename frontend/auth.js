@@ -42,10 +42,24 @@ async function handleLogin(e) {
                 window.location.href = 'dashboard.html';
             }, 1000);
         } else {
-            showMessage(data.error || 'Login failed');
+            // Provide specific, user-friendly error messages
+            let errorMessage = 'Login failed. Please try again.';
+
+            if (response.status === 401) {
+                errorMessage = 'Incorrect email or password. Please check your credentials and try again.';
+            } else if (response.status === 429) {
+                errorMessage = 'Too many login attempts. Please wait 15 minutes and try again.';
+            } else if (response.status === 400) {
+                errorMessage = 'Please enter a valid email and password.';
+            } else if (data.error) {
+                errorMessage = data.error;
+            }
+
+            showMessage(errorMessage);
         }
     } catch (error) {
-        showMessage('Server connection error. Please try again.');
+        console.error('Login error:', error);
+        showMessage('Cannot connect to server. Please check your internet connection and try again.');
     }
 }
 
@@ -72,13 +86,28 @@ async function handleSignup(e) {
                 document.getElementById('loginEmail').value = email;
             }, 1500);
         } else {
-            const errorMsg = data.details
-                ? data.details.map(d => d.message).join(', ')
-                : data.error || 'Signup failed';
-            showMessage(errorMsg);
+            // Provide specific, user-friendly error messages
+            let errorMessage = 'Signup failed. Please try again.';
+
+            if (response.status === 409 || (data.error && data.error.includes('already exists'))) {
+                errorMessage = 'This email is already registered. Try logging in instead.';
+            } else if (response.status === 429) {
+                errorMessage = 'Too many signup attempts. Please wait 15 minutes and try again.';
+            } else if (response.status === 400) {
+                if (data.details) {
+                    errorMessage = data.details.map(d => d.message).join(', ');
+                } else {
+                    errorMessage = 'Please check your input: Email must be valid, password must be at least 8 characters.';
+                }
+            } else if (data.error) {
+                errorMessage = data.error;
+            }
+
+            showMessage(errorMessage);
         }
     } catch (error) {
-        showMessage('Server connection error. Please try again.');
+        console.error('Signup error:', error);
+        showMessage('Cannot connect to server. Please check your internet connection and try again.');
     }
 }
 
