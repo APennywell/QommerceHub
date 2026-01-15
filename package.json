@@ -1,0 +1,12 @@
+{
+  "name": "qommercehub",
+  "version": "1.0.0",
+  "description": "QommerceHub Enterprise E-Commerce Platform",
+  "scripts": {
+    "start": "node backend/server.js",
+    "test": "cd backend && npm test"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
