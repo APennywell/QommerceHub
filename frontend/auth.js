@@ -12,11 +12,64 @@ function showMessage(message, type = 'error') {
 function showLogin() {
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('forgotPasswordForm').style.display = 'none';
 }
 
 function showSignup() {
     document.getElementById('loginForm').style.display = 'none';
     document.getElementById('signupForm').style.display = 'block';
+    document.getElementById('forgotPasswordForm').style.display = 'none';
+}
+
+function showForgotPassword() {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('forgotPasswordForm').style.display = 'block';
+}
+
+async function handleForgotPassword(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('forgotEmail').value;
+
+    const button = e.target.querySelector('button[type="submit"]');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner"></span> Sending...';
+
+    try {
+        const response = await fetch(`${API_URL}/api/tenants/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            button.innerHTML = 'Email Sent!';
+            showMessage('If an account exists with this email, you will receive a password reset link.', 'success');
+
+            if (data.previewUrl) {
+                console.log('Preview reset email at:', data.previewUrl);
+            }
+
+            setTimeout(() => {
+                showLogin();
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }, 3000);
+        } else {
+            showMessage(data.error || 'Failed to send reset email. Please try again.');
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        showMessage('Cannot connect to server. Please check your internet connection and try again.');
+        button.disabled = false;
+        button.innerHTML = originalText;
+    }
 }
 
 async function handleLogin(e) {

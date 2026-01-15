@@ -39,6 +39,10 @@ tmp/
 # Test coverage
 coverage/
 .nyc_output/
+backend/coverage/
+
+# Temp files from Office
+~$*
 
 # Build outputs
 dist/

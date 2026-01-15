@@ -213,8 +213,64 @@ async function sendLowStockAlert({ storeEmail, storeName, product }) {
     }
 }
 
+/**
+ * Send password reset email
+ */
+async function sendPasswordResetEmail({ email, resetToken, resetUrl }) {
+    try {
+        const transporter = await initializeTransporter();
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || '"QommerceHub" <noreply@qommercehub.com>',
+            to: email,
+            subject: 'Password Reset Request - QommerceHub',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">🔐 Password Reset</h1>
+                    </div>
+                    <div style="padding: 30px; background: #f9fafb;">
+                        <p style="font-size: 16px;">Hello,</p>
+                        <p>We received a request to reset your password. Click the button below to set a new password:</p>
+
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="${resetUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                                Reset Password
+                            </a>
+                        </div>
+
+                        <p style="color: #6b7280; font-size: 14px;">This link will expire in <strong>1 hour</strong>.</p>
+                        <p style="color: #6b7280; font-size: 14px;">If you didn't request a password reset, please ignore this email. Your password will remain unchanged.</p>
+
+                        <div style="background: #fee2e2; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                            <p style="margin: 0; color: #991b1b; font-size: 12px;">
+                                <strong>Security Tip:</strong> Never share this link with anyone. QommerceHub will never ask for your password.
+                            </p>
+                        </div>
+                    </div>
+                    <div style="background: #e5e7eb; padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+                        <p>© ${new Date().getFullYear()} QommerceHub. All rights reserved.</p>
+                    </div>
+                </div>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('📧 Password reset email sent! Preview URL:', nodemailer.getTestMessageUrl(info));
+        }
+
+        return { success: true, messageId: info.messageId, previewUrl: nodemailer.getTestMessageUrl(info) };
+    } catch (error) {
+        console.error('Password reset email failed:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
 module.exports = {
     sendOrderConfirmation,
     sendOrderStatusUpdate,
-    sendLowStockAlert
+    sendLowStockAlert,
+    sendPasswordResetEmail
 };

@@ -1,5 +1,8 @@
 const rateLimit = require("express-rate-limit");
 
+// Skip rate limiting in test environment
+const skipInTest = () => process.env.NODE_ENV === 'test';
+
 // General API rate limiter
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -9,6 +12,7 @@ const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: skipInTest,
 });
 
 // Strict rate limiter for authentication endpoints
@@ -21,6 +25,7 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false,
+  skip: skipInTest,
 });
 
 // Moderate rate limiter for creating resources
@@ -32,6 +37,7 @@ const createLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: skipInTest,
 });
 
 module.exports = {
