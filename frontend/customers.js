@@ -174,6 +174,12 @@ async function handleCustomerSubmit(e) {
 
     const customerId = document.getElementById('customerId').value;
 
+    // Get button and show loading state
+    const button = e.target.querySelector('button[type="submit"]');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner"></span> Saving...';
+
     try {
         let response;
         if (isEditing && customerId) {
@@ -192,17 +198,35 @@ async function handleCustomerSubmit(e) {
             closeModal();
             loadCustomers(currentPage, searchQuery);
             alert(isEditing ? 'Customer updated successfully!' : 'Customer added successfully!');
+            // Restore button for next use
+            button.disabled = false;
+            button.innerHTML = originalText;
         } else {
             const error = await response.json();
             alert(error.error || 'Failed to save customer');
+            // Restore button on error
+            button.disabled = false;
+            button.innerHTML = originalText;
         }
     } catch (error) {
         alert('Error saving customer');
+        // Restore button on error
+        button.disabled = false;
+        button.innerHTML = originalText;
     }
 }
 
 async function deleteCustomer(id) {
     if (!confirm('Are you sure you want to delete this customer?')) return;
+
+    // Get the delete button that was clicked
+    const button = event.target.closest('button');
+    let originalText = '';
+    if (button) {
+        originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner"></span>';
+    }
 
     try {
         const response = await apiRequest(`/api/customers/${id}`, {
@@ -214,9 +238,19 @@ async function deleteCustomer(id) {
             alert('Customer deleted successfully!');
         } else {
             alert('Failed to delete customer');
+            // Restore button on error
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
         }
     } catch (error) {
         alert('Error deleting customer');
+        // Restore button on error
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
     }
 }
 

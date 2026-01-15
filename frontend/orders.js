@@ -282,6 +282,12 @@ async function handleOrderSubmit(e) {
         return;
     }
 
+    // Get button and show loading state
+    const button = e.target.querySelector('button[type="submit"]');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner"></span> Creating order...';
+
     try {
         const response = await apiRequest('/api/orders', {
             method: 'POST',
@@ -292,12 +298,21 @@ async function handleOrderSubmit(e) {
             closeCreateOrderModal();
             loadOrders();
             alert('Order created successfully!');
+            // Restore button for next use
+            button.disabled = false;
+            button.innerHTML = originalText;
         } else {
             const error = await response.json();
             alert(error.error || 'Failed to create order');
+            // Restore button on error
+            button.disabled = false;
+            button.innerHTML = originalText;
         }
     } catch (error) {
         alert('Error creating order');
+        // Restore button on error
+        button.disabled = false;
+        button.innerHTML = originalText;
     }
 }
 
@@ -357,6 +372,15 @@ async function viewOrderDetails(orderId) {
 async function updateOrderStatus(orderId) {
     const newStatus = document.getElementById('newStatus').value;
 
+    // Get the update status button
+    const button = event.target.closest('button');
+    let originalText = '';
+    if (button) {
+        originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner"></span> Updating...';
+    }
+
     try {
         const response = await apiRequest(`/api/orders/${orderId}/status`, {
             method: 'PUT',
@@ -369,9 +393,19 @@ async function updateOrderStatus(orderId) {
             alert('Order status updated!');
         } else {
             alert('Failed to update status');
+            // Restore button on error
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
         }
     } catch (error) {
         alert('Error updating status');
+        // Restore button on error
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
     }
 }
 

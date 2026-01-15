@@ -246,6 +246,12 @@ async function handleProductSubmit(e) {
     const productId = document.getElementById('productId').value;
     const imageFile = document.getElementById('productImage').files[0];
 
+    // Get button and show loading state
+    const button = e.target.querySelector('button[type="submit"]');
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner"></span> Saving...';
+
     try {
         let response;
         let savedProductId = productId;
@@ -271,11 +277,15 @@ async function handleProductSubmit(e) {
         if (!response.ok) {
             const error = await response.json();
             alert(error.error || 'Failed to save product');
+            // Restore button on error
+            button.disabled = false;
+            button.innerHTML = originalText;
             return;
         }
 
         // Step 2: Upload image if provided
         if (imageFile && savedProductId) {
+            button.innerHTML = '<span class="spinner"></span> Uploading image...';
             const formData = new FormData();
             formData.append('image', imageFile);
 
@@ -295,15 +305,30 @@ async function handleProductSubmit(e) {
         closeModal();
         loadInventory(currentPage, searchQuery);
         alert(isEditing ? 'Product updated successfully!' : 'Product added successfully!');
+        // Restore button for next use
+        button.disabled = false;
+        button.innerHTML = originalText;
     } catch (error) {
         console.error('Error saving product:', error);
         alert('Error saving product');
+        // Restore button on error
+        button.disabled = false;
+        button.innerHTML = originalText;
     }
 }
 
 // Delete Product
-async function deleteProduct(id) {
+async function deleteProduct(id, buttonElement) {
     if (!confirm('Are you sure you want to delete this product?')) return;
+
+    // Get the delete button that was clicked (passed from onclick or find it)
+    const button = buttonElement || event.target.closest('button');
+    let originalText = '';
+    if (button) {
+        originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner"></span>';
+    }
 
     try {
         const response = await apiRequest(`/api/inventory/${id}`, {
@@ -315,9 +340,19 @@ async function deleteProduct(id) {
             alert('Product deleted successfully!');
         } else {
             alert('Failed to delete product');
+            // Restore button on error
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
         }
     } catch (error) {
         alert('Error deleting product');
+        // Restore button on error
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
     }
 }
 
