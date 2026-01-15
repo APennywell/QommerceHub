@@ -1,22 +1,18 @@
 // Environment variable validation
 function validateEnv() {
-  const requiredEnvVars = [
-    "PORT",
-    "DB_HOST",
-    "DB_PORT",
-    "DB_USER",
-    "DB_PASSWORD",
-    "DB_NAME",
-    "JWT_SECRET",
-    "NODE_ENV",
-  ];
-
   const missing = [];
 
-  for (const envVar of requiredEnvVars) {
-    if (!process.env[envVar]) {
-      missing.push(envVar);
-    }
+  // JWT_SECRET is always required
+  if (!process.env.JWT_SECRET) {
+    missing.push("JWT_SECRET");
+  }
+
+  // Either DATABASE_URL (Railway/Heroku) OR individual DB vars (local)
+  const hasDbUrl = !!process.env.DATABASE_URL;
+  const hasIndividualDbVars = process.env.DB_HOST && process.env.DB_USER && process.env.DB_NAME;
+
+  if (!hasDbUrl && !hasIndividualDbVars) {
+    missing.push("DATABASE_URL (or DB_HOST, DB_USER, DB_NAME, DB_PASSWORD, DB_PORT)");
   }
 
   if (missing.length > 0) {
