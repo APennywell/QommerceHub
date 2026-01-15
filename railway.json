@@ -5,7 +5,7 @@
     "buildCommand": "cd backend && npm install"
   },
   "deploy": {
-    "startCommand": "cd backend && node server.js",
+    "startCommand": "cd backend && npm run migrate && node server.js",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",

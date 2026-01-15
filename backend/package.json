@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "migrate": "node scripts/migrate.js",
     "test": "jest --coverage --detectOpenHandles --forceExit",
     "test:watch": "jest --watch"
   },
