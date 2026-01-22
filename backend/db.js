@@ -26,6 +26,12 @@ const pool = new Pool(poolConfig);
 
 pool.connect()
     .then(() => console.log('Connected to PostgreSQL'))
-    .catch(err => console.error('Database connection error', err.stack));
+    .catch(err => {
+        console.error('Database connection error', err.stack);
+        // Exit in production so Render knows the deployment failed
+        if (process.env.NODE_ENV === 'production') {
+            process.exit(1);
+        }
+    });
 
 module.exports = pool;
