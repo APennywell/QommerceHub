@@ -3,92 +3,580 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QommerceHub - Login</title>
+    <title>QommerceHub - E-Commerce Platform for Small Business</title>
+    <meta name="description" content="All-in-one e-commerce platform. Manage inventory, customers, orders, and analytics. Customize your store with your brand colors and logo.">
     <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
     <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Navigation */
+        .landing-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .landing-nav .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.4em;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .landing-nav .logo img {
+            height: 36px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #555;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-block;
+            cursor: pointer;
+            border: none;
+            font-size: 1em;
+        }
+
+        .btn-outline {
+            border: 2px solid #667eea;
+            color: #667eea;
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-large {
+            padding: 16px 40px;
+            font-size: 1.1em;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 120px 40px 80px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5em;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-content p {
+            font-size: 1.3em;
+            color: #666;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .hero-image {
+            position: relative;
+        }
+
+        .hero-image img {
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .hero-badge {
+            position: absolute;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hero-badge.badge-1 {
+            top: -20px;
+            right: 20px;
+        }
+
+        .hero-badge.badge-2 {
+            bottom: 40px;
+            left: -20px;
+        }
+
+        .hero-badge .badge-icon {
+            font-size: 1.5em;
+        }
+
+        .hero-badge .badge-text {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .hero-badge .badge-subtext {
+            font-size: 0.85em;
+            color: #888;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 40px;
+            background: white;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 60px;
+        }
+
+        .section-header h2 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .section-header p {
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 32px;
+        }
+
+        .feature-card {
+            background: #f8f9fc;
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 16px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 100px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .how-it-works .section-header h2,
+        .how-it-works .section-header p {
+            color: white;
+        }
+
+        .steps {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .step h3 {
+            font-size: 1.3em;
+            margin-bottom: 12px;
+        }
+
+        .step p {
+            opacity: 0.9;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 100px 40px;
+            background: #f8f9fc;
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .cta p {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        /* Footer */
+        .landing-footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 60px 40px 30px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+        }
+
+        .footer-brand h3 {
+            font-size: 1.5em;
+            margin-bottom: 16px;
+            color: #667eea;
+        }
+
+        .footer-brand p {
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        .footer-links h4 {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .footer-links a {
+            display: block;
+            color: #aaa;
+            text-decoration: none;
+            margin-bottom: 12px;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #667eea;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 40px auto 0;
+            padding-top: 30px;
+            border-top: 1px solid #333;
+            text-align: center;
+            color: #666;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5em;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .hero-image {
+                order: -1;
+            }
+
+            .steps {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .landing-nav {
+                padding: 12px 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 100px 20px 60px;
+            }
+
+            .hero-content h1 {
+                font-size: 2em;
+            }
+
+            .features, .how-it-works, .cta {
+                padding: 60px 20px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-card">
-            <div class="logo">
-                <img src="assets/logo-full.svg" alt="QommerceHub" style="width: 280px; margin-bottom: 10px;">
-                <p>Enterprise E-Commerce Platform</p>
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <a href="/" class="logo">
+            <img src="assets/logo.svg" alt="QommerceHub">
+            QommerceHub
+        </a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="login.html" class="btn btn-outline">Login</a>
+            <a href="login.html" class="btn btn-primary">Start Free</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>Run Your Store Smarter</h1>
+                <p>All-in-one e-commerce platform for managing inventory, customers, orders, and analytics. Customize with your brand colors and logo.</p>
+                <div class="hero-buttons">
+                    <a href="login.html" class="btn btn-primary btn-large">Start Free Trial</a>
+                    <a href="#features" class="btn btn-outline btn-large">Learn More</a>
+                </div>
             </div>
-
-            <div id="loginForm" class="form-container">
-                <h2>Sign In</h2>
-                <form onsubmit="handleLogin(event)">
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="loginEmail" placeholder="you@example.com" required>
+            <div class="hero-image">
+                <div class="hero-badge badge-1">
+                    <span class="badge-icon">📦</span>
+                    <div>
+                        <div class="badge-text">Inventory</div>
+                        <div class="badge-subtext">Track stock in real-time</div>
                     </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <div class="hero-badge badge-2">
+                    <span class="badge-icon">📊</span>
+                    <div>
+                        <div class="badge-text">Analytics</div>
+                        <div class="badge-subtext">Sales reports & charts</div>
                     </div>
-                    <button type="submit" class="btn-primary">Sign In</button>
-                </form>
-                <p class="form-footer">
-                    <a href="#" onclick="showForgotPassword()">Forgot password?</a>
-                </p>
-                <p class="form-footer">
-                    Don't have an account? <a href="#" onclick="showSignup()">Sign Up</a>
-                </p>
-            </div>
-
-            <div id="forgotPasswordForm" class="form-container" style="display: none;">
-                <h2>Reset Password</h2>
-                <p style="color: var(--gray-600); margin-bottom: 20px;">Enter your email and we'll send you a link to reset your password.</p>
-                <form onsubmit="handleForgotPassword(event)">
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="forgotEmail" placeholder="you@example.com" required>
-                    </div>
-                    <button type="submit" class="btn-primary">Send Reset Link</button>
-                </form>
-                <p class="form-footer">
-                    Remember your password? <a href="#" onclick="showLogin()">Sign In</a>
-                </p>
-            </div>
-
-            <div id="signupForm" class="form-container" style="display: none;">
-                <h2>Create Account</h2>
-                <form onsubmit="handleSignup(event)">
-                    <div class="form-group">
-                        <label>Store Name</label>
-                        <input type="text" id="signupStoreName" placeholder="My Awesome Store" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="signupEmail" placeholder="you@example.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Password (min 8 characters)</label>
-                        <input type="password" id="signupPassword" placeholder="••••••••" minlength="8" required>
-                    </div>
-                    <button type="submit" class="btn-primary">Create Account</button>
-                </form>
-                <p class="form-footer">
-                    Already have an account? <a href="#" onclick="showLogin()">Sign In</a>
-                </p>
-            </div>
-
-            <div id="message" class="message"></div>
-
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--gray-200); text-align: center;">
-                <p style="font-size: 12px; color: var(--gray-500);">
-                    <a href="privacy.html" style="color: var(--gray-600); text-decoration: none;">Privacy Policy</a>
-                    &nbsp;&bull;&nbsp;
-                    <a href="terms.html" style="color: var(--gray-600); text-decoration: none;">Terms of Service</a>
-                </p>
-                <p style="font-size: 11px; color: var(--gray-400); margin-top: 8px;">
-                    &copy; 2026 QommerceHub. All rights reserved.
-                </p>
+                </div>
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400'%3E%3Crect fill='%23667eea' width='600' height='400' rx='12'/%3E%3Crect x='20' y='20' fill='%23fff' width='560' height='50' rx='8' opacity='0.9'/%3E%3Crect x='20' y='90' fill='%23fff' width='180' height='290' rx='8' opacity='0.95'/%3E%3Crect x='220' y='90' fill='%23fff' width='360' height='140' rx='8' opacity='0.95'/%3E%3Crect x='220' y='250' fill='%23fff' width='170' height='130' rx='8' opacity='0.95'/%3E%3Crect x='410' y='250' fill='%23fff' width='170' height='130' rx='8' opacity='0.95'/%3E%3C/svg%3E" alt="QommerceHub Dashboard">
             </div>
         </div>
-    </div>
+    </section>
 
-    <script src="config.js"></script>
-    <script src="auth.js"></script>
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>Everything You Need to Grow</h2>
+            <p>Powerful tools designed for small businesses to manage and scale their e-commerce operations.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3>Inventory Management</h3>
+                <p>Track products, SKUs, stock levels, and pricing. Get low stock alerts and manage your catalog with ease.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>Customer CRM</h3>
+                <p>Manage customer contacts, view purchase history, and build lasting relationships with your buyers.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛒</div>
+                <h3>Order Processing</h3>
+                <p>Create orders, track status from pending to completed, and process payments via Stripe or cash.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Analytics Dashboard</h3>
+                <p>Visualize sales trends, see top products, and export reports to CSV or Excel for deeper analysis.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Brand Customization</h3>
+                <p>Upload your logo, choose your brand colors, and make the platform truly yours with custom themes.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>Barcode Scanner</h3>
+                <p>Use your phone camera to scan product barcodes for quick lookups and inventory management.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="section-header">
+            <h2>Get Started in Minutes</h2>
+            <p>No complex setup. No technical skills required. Just sign up and go.</p>
+        </div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Create Your Account</h3>
+                <p>Sign up with your email and store name. It takes less than 30 seconds.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Add Your Products</h3>
+                <p>Import your inventory or add products one by one with images and pricing.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Start Selling</h3>
+                <p>Process orders, track customers, and watch your business grow with real-time analytics.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <h2>Ready to Streamline Your Business?</h2>
+        <p>Join thousands of store owners who trust QommerceHub to manage their operations.</p>
+        <a href="login.html" class="btn btn-primary btn-large">Start Your Free Trial</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>QommerceHub</h3>
+                <p>Enterprise-grade e-commerce tools for growing businesses. Manage inventory, customers, orders, and analytics all in one place.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Product</h4>
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="login.html">Login</a>
+            </div>
+            <div class="footer-links">
+                <h4>Legal</h4>
+                <a href="privacy.html">Privacy Policy</a>
+                <a href="terms.html">Terms of Service</a>
+            </div>
+            <div class="footer-links">
+                <h4>Contact</h4>
+                <a href="mailto:support@qommercehub.com">support@qommercehub.com</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 QommerceHub. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
 </html>

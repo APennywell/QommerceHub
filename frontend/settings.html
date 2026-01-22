@@ -262,7 +262,7 @@
             <a href="barcode-scanner.html" style="color: var(--gray-700); text-decoration: none;">Scanner</a>
             <a href="settings.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Settings</a>
             <span class="store-name" id="storeName"></span>
-            <button class="btn-logout" onclick="handleLogout()">Logout</button>
+            <button class="btn-logout" id="logoutBtn">Logout</button>
         </div>
     </nav>
 
@@ -323,7 +323,7 @@
             <!-- Logo Upload -->
             <div class="settings-card">
                 <h3>🏪 Store Logo</h3>
-                <div class="upload-area" id="logoUploadArea" onclick="document.getElementById('logoInput').click()">
+                <div class="upload-area" id="logoUploadArea">
                     <img id="logoPreview" class="upload-preview" style="display: none;">
                     <div id="logoPlaceholder">
                         <p style="font-size: 2em; margin-bottom: 8px;">📷</p>
@@ -331,14 +331,14 @@
                         <small style="color: var(--gray-500);">Max 2MB. JPG, PNG, GIF, WebP</small>
                     </div>
                 </div>
-                <input type="file" id="logoInput" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
-                <button class="btn btn-danger" id="removeLogoBtn" style="display: none; width: 100%;" onclick="handleRemoveLogo()">Remove Logo</button>
+                <input type="file" id="logoInput" accept="image/*" style="display: none;">
+                <button class="btn btn-danger" id="removeLogoBtn" style="display: none; width: 100%;">Remove Logo</button>
             </div>
 
             <!-- Background Image -->
             <div class="settings-card">
                 <h3>🖼️ Background Image</h3>
-                <div class="upload-area" id="bgUploadArea" onclick="document.getElementById('bgInput').click()">
+                <div class="upload-area" id="bgUploadArea">
                     <img id="bgPreview" class="upload-preview" style="display: none;">
                     <div id="bgPlaceholder">
                         <p style="font-size: 2em; margin-bottom: 8px;">🌄</p>
@@ -346,8 +346,8 @@
                         <small style="color: var(--gray-500);">Max 10MB. JPG, PNG, GIF, WebP</small>
                     </div>
                 </div>
-                <input type="file" id="bgInput" accept="image/*" style="display: none;" onchange="handleBackgroundUpload(event)">
-                <button class="btn btn-danger" id="removeBgBtn" style="display: none; width: 100%;" onclick="handleRemoveBackground()">Remove Background</button>
+                <input type="file" id="bgInput" accept="image/*" style="display: none;">
+                <button class="btn btn-danger" id="removeBgBtn" style="display: none; width: 100%;">Remove Background</button>
             </div>
         </div>
 
@@ -358,31 +358,31 @@
 
                 <div class="color-picker-group">
                     <label>Primary Color</label>
-                    <input type="color" id="primaryColor" value="#667eea" onchange="handleColorChange()">
+                    <input type="color" id="primaryColor" value="#667eea">
                     <span class="color-value" id="primaryColorValue">#667eea</span>
                 </div>
 
                 <div class="color-picker-group">
                     <label>Secondary Color</label>
-                    <input type="color" id="secondaryColor" value="#764ba2" onchange="handleColorChange()">
+                    <input type="color" id="secondaryColor" value="#764ba2">
                     <span class="color-value" id="secondaryColorValue">#764ba2</span>
                 </div>
 
                 <div class="color-picker-group">
                     <label>Accent Color</label>
-                    <input type="color" id="accentColor" value="#10b981" onchange="handleColorChange()">
+                    <input type="color" id="accentColor" value="#10b981">
                     <span class="color-value" id="accentColorValue">#10b981</span>
                 </div>
 
                 <div class="color-picker-group">
                     <label>Text Color</label>
-                    <input type="color" id="textColor" value="#111827" onchange="handleColorChange()">
+                    <input type="color" id="textColor" value="#111827">
                     <span class="color-value" id="textColorValue">#111827</span>
                 </div>
 
                 <div class="color-picker-group">
                     <label>Background Color</label>
-                    <input type="color" id="backgroundColor" value="#f9fafb" onchange="handleColorChange()">
+                    <input type="color" id="backgroundColor" value="#f9fafb">
                     <span class="color-value" id="backgroundColorValue">#f9fafb</span>
                 </div>
             </div>
@@ -394,7 +394,7 @@
                 <div class="toggle-switch">
                     <label>Enable Animations</label>
                     <label class="toggle">
-                        <input type="checkbox" id="animationsEnabled" checked onchange="handleAnimationToggle()">
+                        <input type="checkbox" id="animationsEnabled" checked>
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -421,8 +421,8 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <button class="btn btn-reset" onclick="handleReset()">Reset to Defaults</button>
-            <button class="btn btn-primary" onclick="handleSave()">Save Changes</button>
+            <button class="btn btn-reset" id="resetBtn">Reset to Defaults</button>
+            <button class="btn btn-primary" id="saveBtn">Save Changes</button>
         </div>
     </div>
 

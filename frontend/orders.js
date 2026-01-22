@@ -12,7 +12,7 @@ try {
     localStorage.removeItem('tenant');
 }
 
-if (!token) window.location.href = 'index.html';
+if (!token) window.location.href = 'login.html';
 
 document.getElementById('storeName').textContent = tenant.store_name || '';
 
@@ -26,7 +26,7 @@ async function handleLogout() {
         console.error('Logout API error:', error);
     }
     localStorage.clear();
-    window.location.href = 'index.html';
+    window.location.href = 'login.html';
 }
 
 async function apiRequest(endpoint, options = {}) {

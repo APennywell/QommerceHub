@@ -15,7 +15,7 @@ try {
 }
 
 if (!token) {
-    window.location.href = 'index.html';
+    window.location.href = 'login.html';
 }
 
 // Display store name
@@ -36,7 +36,7 @@ async function handleLogout() {
         console.error('Logout API error:', error);
     }
     localStorage.clear();
-    window.location.href = 'index.html';
+    window.location.href = 'login.html';
 }
 
 // API Helper

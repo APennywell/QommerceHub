@@ -47,7 +47,7 @@ let currentSettings = { ...window.ThemeLoader.DEFAULT_THEME };
 function checkAuth() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return false;
     }
     return true;
@@ -71,7 +71,7 @@ async function handleLogout() {
         console.error('Logout API error:', error);
     }
     localStorage.clear();
-    window.location.href = 'index.html';
+    window.location.href = 'login.html';
 }
 
 // Initialize page
@@ -419,5 +419,71 @@ function handleReset() {
     document.querySelector('[data-theme="default"]').classList.add('active');
 }
 
+// Setup all event listeners (CSP-compliant)
+function setupEventListeners() {
+    // Logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    // Logo upload
+    const logoUploadArea = document.getElementById('logoUploadArea');
+    if (logoUploadArea) {
+        logoUploadArea.addEventListener('click', () => document.getElementById('logoInput').click());
+    }
+    const logoInput = document.getElementById('logoInput');
+    if (logoInput) {
+        logoInput.addEventListener('change', handleLogoUpload);
+    }
+    const removeLogoBtn = document.getElementById('removeLogoBtn');
+    if (removeLogoBtn) {
+        removeLogoBtn.addEventListener('click', handleRemoveLogo);
+    }
+
+    // Background upload
+    const bgUploadArea = document.getElementById('bgUploadArea');
+    if (bgUploadArea) {
+        bgUploadArea.addEventListener('click', () => document.getElementById('bgInput').click());
+    }
+    const bgInput = document.getElementById('bgInput');
+    if (bgInput) {
+        bgInput.addEventListener('change', handleBackgroundUpload);
+    }
+    const removeBgBtn = document.getElementById('removeBgBtn');
+    if (removeBgBtn) {
+        removeBgBtn.addEventListener('click', handleRemoveBackground);
+    }
+
+    // Color pickers
+    const colorInputs = ['primaryColor', 'secondaryColor', 'accentColor', 'textColor', 'backgroundColor'];
+    colorInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('change', handleColorChange);
+            input.addEventListener('input', handleColorChange);
+        }
+    });
+
+    // Animations toggle
+    const animationsEnabled = document.getElementById('animationsEnabled');
+    if (animationsEnabled) {
+        animationsEnabled.addEventListener('change', handleAnimationToggle);
+    }
+
+    // Save and Reset buttons
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', handleSave);
+    }
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', handleReset);
+    }
+}
+
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    setupEventListeners();
+    init();
+});

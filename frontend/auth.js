@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:5000';
+// API_URL is set by config.js
+const API_URL = window.API_URL || 'http://localhost:5000';
 
 function showMessage(message, type = 'error') {
     const messageEl = document.getElementById('message');
@@ -193,10 +194,62 @@ async function handleSignup(e) {
     }
 }
 
-// Check if already logged in
-if (window.location.pathname.includes('index.html') || window.location.pathname === '/') {
+// Check if already logged in (on login page)
+if (window.location.pathname.includes('login.html')) {
     const token = localStorage.getItem('token');
     if (token) {
         window.location.href = 'dashboard.html';
     }
 }
+
+// Attach event listeners (CSP-compliant, no inline handlers)
+document.addEventListener('DOMContentLoaded', function() {
+    // Form submissions
+    const loginForm = document.getElementById('loginFormElement');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    const forgotForm = document.getElementById('forgotPasswordFormElement');
+    if (forgotForm) {
+        forgotForm.addEventListener('submit', handleForgotPassword);
+    }
+
+    const signupForm = document.getElementById('signupFormElement');
+    if (signupForm) {
+        signupForm.addEventListener('submit', handleSignup);
+    }
+
+    // Navigation links
+    const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+    if (forgotPasswordLink) {
+        forgotPasswordLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showForgotPassword();
+        });
+    }
+
+    const showSignupLink = document.getElementById('showSignupLink');
+    if (showSignupLink) {
+        showSignupLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showSignup();
+        });
+    }
+
+    const showLoginFromForgot = document.getElementById('showLoginFromForgot');
+    if (showLoginFromForgot) {
+        showLoginFromForgot.addEventListener('click', function(e) {
+            e.preventDefault();
+            showLogin();
+        });
+    }
+
+    const showLoginFromSignup = document.getElementById('showLoginFromSignup');
+    if (showLoginFromSignup) {
+        showLoginFromSignup.addEventListener('click', function(e) {
+            e.preventDefault();
+            showLogin();
+        });
+    }
+});

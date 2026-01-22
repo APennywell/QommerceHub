@@ -6,7 +6,7 @@ const API_URL = BASE_URL + '/api';
 function checkAuth() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return null;
     }
     return token;
@@ -43,7 +43,7 @@ async function handleLogout() {
         console.error('Logout API error:', error);
     }
     localStorage.clear();
-    window.location.href = 'index.html';
+    window.location.href = 'login.html';
 }
 
 // Initialize Quagga scanner

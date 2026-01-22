@@ -9,7 +9,7 @@ services:
     name: myshop-platform
     runtime: node
     plan: free
-    buildCommand: cd backend && npm install
+    buildCommand: npm install && cd backend && npm install
     startCommand: cd backend && npm run migrate && node server.js
     healthCheckPath: /health
     envVars:

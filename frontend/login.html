@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QommerceHub - Login</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <img src="assets/logo-full.svg" alt="QommerceHub" style="width: 280px; margin-bottom: 10px;">
+                <p>Enterprise E-Commerce Platform</p>
+            </div>
+
+            <div id="loginForm" class="form-container">
+                <h2>Sign In</h2>
+                <form id="loginFormElement">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Sign In</button>
+                </form>
+                <p class="form-footer">
+                    <a href="#" id="forgotPasswordLink">Forgot password?</a>
+                </p>
+                <p class="form-footer">
+                    Don't have an account? <a href="#" id="showSignupLink">Sign Up</a>
+                </p>
+            </div>
+
+            <div id="forgotPasswordForm" class="form-container" style="display: none;">
+                <h2>Reset Password</h2>
+                <p style="color: var(--gray-600); margin-bottom: 20px;">Enter your email and we'll send you a link to reset your password.</p>
+                <form id="forgotPasswordFormElement">
+                    <div class="form-group">
+                        <label for="forgotEmail">Email</label>
+                        <input type="email" id="forgotEmail" placeholder="you@example.com" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Send Reset Link</button>
+                </form>
+                <p class="form-footer">
+                    Remember your password? <a href="#" id="showLoginFromForgot">Sign In</a>
+                </p>
+            </div>
+
+            <div id="signupForm" class="form-container" style="display: none;">
+                <h2>Create Account</h2>
+                <form id="signupFormElement">
+                    <div class="form-group">
+                        <label for="signupStoreName">Store Name</label>
+                        <input type="text" id="signupStoreName" placeholder="My Awesome Store" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password (min 8 characters)</label>
+                        <input type="password" id="signupPassword" placeholder="••••••••" minlength="8" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Create Account</button>
+                </form>
+                <p class="form-footer">
+                    Already have an account? <a href="#" id="showLoginFromSignup">Sign In</a>
+                </p>
+            </div>
+
+            <div id="message" class="message"></div>
+
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--gray-200); text-align: center;">
+                <p style="font-size: 12px; color: var(--gray-500);">
+                    <a href="privacy.html" style="color: var(--gray-600); text-decoration: none;">Privacy Policy</a>
+                    &nbsp;&bull;&nbsp;
+                    <a href="terms.html" style="color: var(--gray-600); text-decoration: none;">Terms of Service</a>
+                </p>
+                <p style="font-size: 11px; color: var(--gray-400); margin-top: 8px;">
+                    &copy; 2026 QommerceHub. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>
