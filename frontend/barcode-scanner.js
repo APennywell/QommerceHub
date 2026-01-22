@@ -379,6 +379,12 @@ document.addEventListener('DOMContentLoaded', function() {
     loadStoreName();
     displayHistory();
 
+    // Logout button event listener (CSP-compliant)
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+
     // Allow Enter key in manual input
     document.getElementById('barcodeInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {

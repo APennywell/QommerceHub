@@ -653,4 +653,12 @@ async function processPayment() {
     }
 }
 
+// Setup event listeners (CSP-compliant)
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+});
+
 loadOrders();

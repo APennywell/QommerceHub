@@ -410,5 +410,13 @@ function removeImage() {
     document.getElementById('previewImg').src = '';
 }
 
+// Setup event listeners (CSP-compliant)
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+});
+
 // Initial load
 loadInventory();
