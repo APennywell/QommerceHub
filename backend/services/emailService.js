@@ -1,5 +1,18 @@
 const nodemailer = require('nodemailer');
 
+/**
+ * Escape HTML to prevent XSS in email templates
+ */
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 // Create reusable transporter
 // For production, use real SMTP credentials (Gmail, SendGrid, etc.)
 // For development, this uses ethereal.email (test email service)
@@ -50,7 +63,7 @@ async function sendOrderConfirmation({ customerEmail, customerName, orderId, ord
             const itemTotal = item.quantity * parseFloat(item.price);
             itemsHtml += `
                 <li style="padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
-                    <strong>${item.product_name}</strong> (${item.sku})<br>
+                    <strong>${escapeHtml(item.product_name)}</strong> (${escapeHtml(item.sku)})<br>
                     Quantity: ${item.quantity} × $${parseFloat(item.price).toFixed(2)} = $${itemTotal.toFixed(2)}
                 </li>
             `;
@@ -67,7 +80,7 @@ async function sendOrderConfirmation({ customerEmail, customerName, orderId, ord
                         <h1 style="color: white; margin: 0;">🛍️ Order Confirmed!</h1>
                     </div>
                     <div style="padding: 30px; background: #f9fafb;">
-                        <p style="font-size: 16px;">Hi ${customerName},</p>
+                        <p style="font-size: 16px;">Hi ${escapeHtml(customerName)},</p>
                         <p>Thank you for your order! We've received your order and are processing it now.</p>
 
                         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -133,7 +146,7 @@ async function sendOrderStatusUpdate({ customerEmail, customerName, orderId, old
                         <h1 style="color: white; margin: 0;">${statusEmojis[newStatus]} Order Update</h1>
                     </div>
                     <div style="padding: 30px; background: #f9fafb;">
-                        <p style="font-size: 16px;">Hi ${customerName},</p>
+                        <p style="font-size: 16px;">Hi ${escapeHtml(customerName)},</p>
                         <p>Your order status has been updated.</p>
 
                         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -174,19 +187,19 @@ async function sendLowStockAlert({ storeEmail, storeName, product }) {
         const mailOptions = {
             from: process.env.EMAIL_FROM || '"QommerceHub" <noreply@qommercehub.com>',
             to: storeEmail,
-            subject: `⚠️ Low Stock Alert: ${product.name}`,
+            subject: `⚠️ Low Stock Alert: ${escapeHtml(product.name)}`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <div style="background: #ef4444; padding: 30px; text-align: center;">
                         <h1 style="color: white; margin: 0;">⚠️ Low Stock Alert</h1>
                     </div>
                     <div style="padding: 30px; background: #f9fafb;">
-                        <p style="font-size: 16px;">Hi ${storeName},</p>
+                        <p style="font-size: 16px;">Hi ${escapeHtml(storeName)},</p>
                         <p>The following product is running low on stock:</p>
 
                         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
-                            <h2 style="color: #ef4444; margin-top: 0;">${product.name}</h2>
-                            <p><strong>SKU:</strong> ${product.sku}</p>
+                            <h2 style="color: #ef4444; margin-top: 0;">${escapeHtml(product.name)}</h2>
+                            <p><strong>SKU:</strong> ${escapeHtml(product.sku)}</p>
                             <p><strong>Current Stock:</strong> <span style="color: #ef4444; font-size: 24px; font-weight: bold;">${product.quantity}</span></p>
                             <p><strong>Price:</strong> $${parseFloat(product.price).toFixed(2)}</p>
                         </div>

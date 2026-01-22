@@ -1,16 +1,31 @@
-const API_URL = 'http://localhost:5000';
+// API_URL is set by theme-loader.js
+const API_URL = window.API_URL || 'http://localhost:5000';
 let currentPeriod = 30;
 let salesChart = null;
 let statusChart = null;
 
 const token = localStorage.getItem('token');
-const tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
+let tenant = {};
+try {
+    tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
+} catch (e) {
+    console.error('Failed to parse tenant data:', e);
+    localStorage.removeItem('tenant');
+}
 
 if (!token) window.location.href = 'index.html';
 
 document.getElementById('storeName').textContent = tenant.store_name || '';
 
-function handleLogout() {
+async function handleLogout() {
+    try {
+        await fetch(`${API_URL}/api/tenants/logout`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    } catch (error) {
+        console.error('Logout API error:', error);
+    }
     localStorage.clear();
     window.location.href = 'index.html';
 }
@@ -34,6 +49,7 @@ async function apiRequest(endpoint, options = {}) {
 async function loadAnalytics(days = 30) {
     try {
         const response = await apiRequest(`/api/analytics/sales?days=${days}`);
+        if (!response) return;
         const data = await response.json();
 
         // Update revenue stats
@@ -298,12 +314,15 @@ function escapeHtml(text) {
 }
 
 // Report download functions
-async function downloadSalesReport() {
+async function downloadSalesReport(e) {
+    const btn = e ? e.target.closest('button') : null;
+    const originalText = btn ? btn.innerHTML : '';
+
     try {
-        const btn = event.target.closest('button');
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><span>⏳</span><div>Generating...</div></div>';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><span>⏳</span><div>Generating...</div></div>';
+        }
 
         const response = await fetch(`${API_URL}/api/reports/sales/csv`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -321,22 +340,27 @@ async function downloadSalesReport() {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
 
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
         alert('Sales report downloaded successfully!');
-    } catch (error) {
-        console.error('Error downloading sales report:', error);
+    } catch (err) {
+        console.error('Error downloading sales report:', err);
         alert('Failed to download sales report. Please try again.');
-        event.target.closest('button').disabled = false;
+        if (btn) btn.disabled = false;
     }
 }
 
-async function downloadInventoryReport() {
+async function downloadInventoryReport(e) {
+    const btn = e ? e.target.closest('button') : null;
+    const originalText = btn ? btn.innerHTML : '';
+
     try {
-        const btn = event.target.closest('button');
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><span>⏳</span><div>Generating...</div></div>';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><span>⏳</span><div>Generating...</div></div>';
+        }
 
         const response = await fetch(`${API_URL}/api/reports/inventory/excel`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -354,22 +378,27 @@ async function downloadInventoryReport() {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
 
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
         alert('Inventory report downloaded successfully!');
-    } catch (error) {
-        console.error('Error downloading inventory report:', error);
+    } catch (err) {
+        console.error('Error downloading inventory report:', err);
         alert('Failed to download inventory report. Please try again.');
-        event.target.closest('button').disabled = false;
+        if (btn) btn.disabled = false;
     }
 }
 
-async function downloadCustomersReport() {
+async function downloadCustomersReport(e) {
+    const btn = e ? e.target.closest('button') : null;
+    const originalText = btn ? btn.innerHTML : '';
+
     try {
-        const btn = event.target.closest('button');
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><span>⏳</span><div>Generating...</div></div>';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><span>⏳</span><div>Generating...</div></div>';
+        }
 
         const response = await fetch(`${API_URL}/api/reports/customers/csv`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -387,13 +416,15 @@ async function downloadCustomersReport() {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
 
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
         alert('Customers report downloaded successfully!');
-    } catch (error) {
-        console.error('Error downloading customers report:', error);
+    } catch (err) {
+        console.error('Error downloading customers report:', err);
         alert('Failed to download customers report. Please try again.');
-        event.target.closest('button').disabled = false;
+        if (btn) btn.disabled = false;
     }
 }
 

@@ -4,6 +4,9 @@ const db = require('../db');
  * Get sales analytics for dashboard
  */
 async function getSalesAnalytics(tenantId, { days = 30 } = {}) {
+    // Validate and sanitize days parameter to prevent SQL injection
+    const validDays = Math.min(Math.max(parseInt(days, 10) || 30, 1), 365);
+
     try {
         const analytics = {};
 
@@ -18,17 +21,17 @@ async function getSalesAnalytics(tenantId, { days = 30 } = {}) {
         );
         analytics.revenue = revenueResult.rows[0];
 
-        // Revenue by period
+        // Revenue by period - using parameterized query for days
         const periodResult = await db.query(
             `SELECT DATE(created_at) as date,
                     COUNT(*) as order_count,
                     SUM(total_amount) as revenue
              FROM orders
              WHERE tenant_id = $1 AND status != 'cancelled'
-                   AND created_at >= NOW() - INTERVAL '${days} days'
+                   AND created_at >= NOW() - INTERVAL '1 day' * $2
              GROUP BY DATE(created_at)
              ORDER BY date ASC`,
-            [tenantId]
+            [tenantId, validDays]
         );
         analytics.salesByDate = periodResult.rows;
 
@@ -62,7 +65,7 @@ async function getSalesAnalytics(tenantId, { days = 30 } = {}) {
         const lowStockResult = await db.query(
             `SELECT id, name, sku, quantity, price
              FROM inventory
-             WHERE tenant_id = $1 AND deleted_at IS NULL AND quantity < 10
+             WHERE tenant_id = $1 AND is_deleted = FALSE AND quantity < 10
              ORDER BY quantity ASC
              LIMIT 10`,
             [tenantId]
@@ -112,7 +115,7 @@ async function getInventoryStats(tenantId) {
                 COALESCE(SUM(quantity * price), 0) as total_value,
                 COUNT(CASE WHEN quantity < 10 THEN 1 END) as low_stock_count
              FROM inventory
-             WHERE tenant_id = $1 AND deleted_at IS NULL`,
+             WHERE tenant_id = $1 AND is_deleted = FALSE`,
             [tenantId]
         );
         return result.rows[0];

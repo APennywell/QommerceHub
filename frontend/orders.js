@@ -1,15 +1,30 @@
-const API_URL = 'http://localhost:5000';
+// API_URL is set by theme-loader.js
+const API_URL = window.API_URL || 'http://localhost:5000';
 let currentPage = 1;
 let statusFilter = '';
 
 const token = localStorage.getItem('token');
-const tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
+let tenant = {};
+try {
+    tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
+} catch (e) {
+    console.error('Failed to parse tenant data:', e);
+    localStorage.removeItem('tenant');
+}
 
 if (!token) window.location.href = 'index.html';
 
 document.getElementById('storeName').textContent = tenant.store_name || '';
 
-function handleLogout() {
+async function handleLogout() {
+    try {
+        await fetch(`${API_URL}/api/tenants/logout`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    } catch (error) {
+        console.error('Logout API error:', error);
+    }
     localStorage.clear();
     window.location.href = 'index.html';
 }
@@ -34,6 +49,7 @@ async function loadOrders(page = 1, status = '') {
     try {
         const params = new URLSearchParams({ page, limit: 10, status });
         const response = await apiRequest(`/api/orders?${params}`);
+        if (!response) return;
         const data = await response.json();
 
         if (data.items) {
@@ -134,61 +150,32 @@ function handleStatusFilter() {
     loadOrders(1, statusFilter);
 }
 
-async function openCreateOrderModal() {
-    await loadCustomersForDropdown();
-    await loadInventoryForOrder();
-    document.getElementById('orderItems').innerHTML = '';
-    addOrderItem();
-    document.getElementById('createOrderModal').classList.add('active');
-}
-
-function closeCreateOrderModal() {
-    document.getElementById('createOrderModal').classList.remove('active');
-}
-
-async function loadCustomers() {
-    try {
-        const response = await apiRequest('/api/customers?limit=100');
-        const data = await response.json();
-        const select = document.getElementById('orderCustomer');
-        select.innerHTML = '<option value="">Select Customer</option>';
-        data.items.forEach(customer => {
-            const option = document.createElement('option');
-            option.value = customer.id;
-            option.textContent = `${customer.name} (${customer.email})`;
-            select.appendChild(option);
-        });
-    } catch (error) {
-        console.error('Error loading customers:', error);
-    }
-}
-
 let orderItemsCount = 0;
 let inventory = [];
-
-async function loadInventory() {
-    const response = await apiRequest('/api/inventory?limit=100');
-    const data = await response.json();
-    return data.items || [];
-}
 
 async function openCreateOrderModal() {
     // Load customers
     const customersResponse = await apiRequest('/api/customers?limit=100');
+    if (!customersResponse) return;
     const customersData = await customersResponse.json();
 
     const customerSelect = document.getElementById('orderCustomer');
     customerSelect.innerHTML = '<option value="">Select Customer</option>';
     customersData.items.forEach(c => {
-        customerSelect.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)} (${c.email})</option>`;
+        const option = document.createElement('option');
+        option.value = c.id;
+        option.textContent = `${c.name} (${c.email})`;
+        customerSelect.appendChild(option);
     });
 
     // Load inventory for order items
     const inventoryResponse = await apiRequest('/api/inventory?limit=100');
+    if (!inventoryResponse) return;
     const inventoryData = await inventoryResponse.json();
-    window.inventoryItems = data.items;
+    window.inventoryItems = inventoryData.items;
 
     document.getElementById('createOrderModal').classList.add('active');
+    document.getElementById('orderItems').innerHTML = '';
     addOrderItem();
 }
 
@@ -219,6 +206,7 @@ function addOrderItem() {
 async function loadProductsForSelect(selectElement) {
     try {
         const response = await apiRequest('/api/inventory?page=1&limit=100');
+        if (!response) return;
         const data = await response.json();
 
         data.items.forEach(item => {
@@ -319,6 +307,7 @@ async function handleOrderSubmit(e) {
 async function viewOrderDetails(orderId) {
     try {
         const response = await apiRequest(`/api/orders/${orderId}`);
+        if (!response) return;
         const order = await response.json();
 
         let itemsHtml = '<table style="width: 100%; margin-top: 15px;"><thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>';
@@ -355,9 +344,9 @@ async function viewOrderDetails(orderId) {
                             <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                         </select>
                     </div>
-                    <button onclick="updateOrderStatus(${order.id})" class="btn btn-success" style="margin-bottom: 10px;">Update Status</button>
+                    <button onclick="updateOrderStatus(${order.id}, null, event)" class="btn btn-success" style="margin-bottom: 10px;">Update Status</button>
                     <button onclick="downloadInvoice(${order.id})" class="btn" style="background: var(--primary); color: white; margin-bottom: 10px;">📄 Download Invoice</button>
-                    <button onclick="openPaymentModal(${order.id}, '${order.customer_name}', ${parseFloat(order.total_amount)})" class="btn" style="background: var(--success); color: white; margin-bottom: 10px;">💳 Process Payment</button>
+                    <button onclick="openPaymentModal(${order.id}, '${escapeHtml(order.customer_name)}', ${parseFloat(order.total_amount)}, '${escapeHtml(order.customer_email || '')}')" class="btn" style="background: var(--success); color: white; margin-bottom: 10px;">💳 Process Payment</button>
                 </div>
             </div>
         `;
@@ -369,11 +358,12 @@ async function viewOrderDetails(orderId) {
     }
 }
 
-async function updateOrderStatus(orderId) {
-    const newStatus = document.getElementById('newStatus').value;
+async function updateOrderStatus(orderId, newStatusFromDropdown, e) {
+    // Handle both call contexts: from table dropdown (with status param) or from modal button (without)
+    const newStatus = newStatusFromDropdown || document.getElementById('newStatus').value;
 
-    // Get the update status button
-    const button = event.target.closest('button');
+    // Get the update status button (only exists in modal context, passed via event parameter)
+    const button = e ? e.target.closest('button') : null;
     let originalText = '';
     if (button) {
         originalText = button.innerHTML;
@@ -388,9 +378,11 @@ async function updateOrderStatus(orderId) {
         });
 
         if (response.ok) {
-            closeOrderDetailsModal();
+            // Only close modal if it was open (button context)
+            if (button) {
+                closeOrderDetailsModal();
+            }
             loadOrders(currentPage, statusFilter);
-            alert('Order status updated!');
         } else {
             alert('Failed to update status');
             // Restore button on error
@@ -462,71 +454,202 @@ function escapeHtml(text) {
 
 // Payment modal functions
 let currentPaymentOrder = null;
+let stripe = null;
+let cardElement = null;
+let stripeConfigured = false;
 
-function openPaymentModal(orderId, customerName, amount) {
-    currentPaymentOrder = { orderId, customerName, amount };
+// Initialize Stripe
+function initializeStripe() {
+    // Check for Stripe publishable key - can be set via window config or hardcoded for demo
+    const stripeKey = window.STRIPE_PUBLISHABLE_KEY || '';
+
+    if (stripeKey && typeof Stripe !== 'undefined') {
+        try {
+            stripe = Stripe(stripeKey);
+            const elements = stripe.elements();
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#424770',
+                        '::placeholder': { color: '#aab7c4' }
+                    },
+                    invalid: {
+                        color: '#ef4444',
+                        iconColor: '#ef4444'
+                    }
+                }
+            });
+            stripeConfigured = true;
+        } catch (e) {
+            console.warn('Stripe initialization failed:', e);
+            stripeConfigured = false;
+        }
+    } else {
+        stripeConfigured = false;
+    }
+}
+
+// Initialize on page load
+initializeStripe();
+
+function togglePaymentMethod() {
+    const method = document.getElementById('paymentMethod').value;
+    const cardContainer = document.getElementById('cardElementContainer');
+    const offlineContainer = document.getElementById('offlinePaymentContainer');
+
+    if (method === 'card') {
+        cardContainer.style.display = 'block';
+        offlineContainer.style.display = 'none';
+    } else {
+        cardContainer.style.display = 'none';
+        offlineContainer.style.display = 'block';
+    }
+}
+
+async function openPaymentModal(orderId, customerName, amount, customerEmail) {
+    currentPaymentOrder = { orderId, customerName, amount, customerEmail };
     document.getElementById('paymentOrderId').textContent = '#' + orderId;
     document.getElementById('paymentCustomer').textContent = customerName;
+    document.getElementById('paymentEmail').textContent = customerEmail || 'N/A';
     document.getElementById('paymentAmount').textContent = amount.toFixed(2);
+    document.getElementById('paymentError').style.display = 'none';
+    document.getElementById('paymentMethod').value = 'card';
+
+    // Reset payment notes
+    const notesEl = document.getElementById('paymentNotes');
+    if (notesEl) notesEl.value = '';
+
+    togglePaymentMethod();
+
+    // Mount Stripe card element if configured
+    if (stripeConfigured && cardElement) {
+        const cardElementDiv = document.getElementById('card-element');
+        cardElementDiv.innerHTML = '';
+        cardElement.mount('#card-element');
+
+        cardElement.on('change', (event) => {
+            const displayError = document.getElementById('card-errors');
+            displayError.textContent = event.error ? event.error.message : '';
+        });
+
+        document.getElementById('stripeNotConfigured').style.display = 'none';
+    } else {
+        document.getElementById('stripeNotConfigured').style.display = 'block';
+        document.getElementById('card-element').innerHTML = '<p style="color: var(--gray-500); margin: 0;">Card payments unavailable - Stripe not configured</p>';
+    }
+
     document.getElementById('paymentModal').classList.add('active');
 }
 
 function closePaymentModal() {
     document.getElementById('paymentModal').classList.remove('active');
+    if (cardElement) {
+        cardElement.unmount();
+    }
     currentPaymentOrder = null;
+}
+
+function showPaymentError(message) {
+    const errorEl = document.getElementById('paymentError');
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
 }
 
 async function processPayment() {
     if (!currentPaymentOrder) return;
 
     const paymentMethod = document.getElementById('paymentMethod').value;
+    const btn = document.getElementById('paymentButton');
+    const originalText = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Processing...';
+    document.getElementById('paymentError').style.display = 'none';
 
     try {
-        // In a real implementation, you would:
-        // 1. Create a payment intent with Stripe
-        // 2. Collect card details securely via Stripe Elements
-        // 3. Confirm the payment
-        // 4. Update the order status
+        if (paymentMethod === 'card') {
+            if (!stripeConfigured) {
+                showPaymentError('Stripe is not configured. Please use cash or bank transfer.');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                return;
+            }
 
-        // For demo purposes, we'll simulate a successful payment
-        const confirmed = confirm(
-            `Process payment of $${currentPaymentOrder.amount.toFixed(2)} using ${paymentMethod}?\n\n` +
-            `Note: This is a demo. In production, this would securely process the payment via Stripe.`
-        );
+            // Create payment intent on backend
+            const intentResponse = await apiRequest('/api/payments/create-intent', {
+                method: 'POST',
+                body: JSON.stringify({
+                    amount: currentPaymentOrder.amount,
+                    orderId: currentPaymentOrder.orderId,
+                    customerEmail: currentPaymentOrder.customerEmail || 'customer@example.com'
+                })
+            });
 
-        if (!confirmed) return;
+            const intentData = await intentResponse.json();
 
-        // Simulate payment processing
-        const btn = event.target;
-        const originalText = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = 'Processing...';
+            if (!intentData.success) {
+                throw new Error(intentData.error || 'Failed to create payment intent');
+            }
 
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
+            // Confirm payment with Stripe
+            const { error, paymentIntent } = await stripe.confirmCardPayment(intentData.clientSecret, {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: currentPaymentOrder.customerName,
+                        email: currentPaymentOrder.customerEmail
+                    }
+                }
+            });
 
-        // In production, you would call the payment API here:
-        // const response = await apiRequest('/api/payments/create-intent', {
-        //     method: 'POST',
-        //     body: JSON.stringify({
-        //         amount: currentPaymentOrder.amount,
-        //         orderId: currentPaymentOrder.orderId,
-        //         customerEmail: // get from order
-        //     })
-        // });
+            if (error) {
+                throw new Error(error.message);
+            }
 
-        btn.textContent = originalText;
-        btn.disabled = false;
+            if (paymentIntent.status === 'succeeded') {
+                // Update order status to processing
+                await apiRequest(`/api/orders/${currentPaymentOrder.orderId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status: 'processing' })
+                });
 
-        closePaymentModal();
-        alert('Payment processed successfully! (Demo Mode)');
+                closePaymentModal();
+                closeOrderDetailsModal();
+                loadOrders(currentPage, statusFilter);
+                alert('Payment successful! Order status updated to processing.');
+            } else {
+                throw new Error('Payment was not completed. Status: ' + paymentIntent.status);
+            }
+        } else {
+            // Cash or Bank Transfer - just update order status
+            const confirmed = confirm(
+                `Record ${paymentMethod === 'cash' ? 'cash' : 'bank transfer'} payment of $${currentPaymentOrder.amount.toFixed(2)}?\n\n` +
+                `This will mark the order as processing.`
+            );
 
-        // Optionally update order status to 'processing' or 'completed'
-        // loadOrders();
+            if (!confirmed) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                return;
+            }
+
+            // Update order status
+            await apiRequest(`/api/orders/${currentPaymentOrder.orderId}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status: 'processing' })
+            });
+
+            closePaymentModal();
+            closeOrderDetailsModal();
+            loadOrders(currentPage, statusFilter);
+            alert(`${paymentMethod === 'cash' ? 'Cash' : 'Bank transfer'} payment recorded. Order status updated to processing.`);
+        }
     } catch (error) {
         console.error('Payment error:', error);
-        alert('Payment failed. Please try again.');
-        event.target.disabled = false;
+        showPaymentError(error.message || 'Payment failed. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
     }
 }
 

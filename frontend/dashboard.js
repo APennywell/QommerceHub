@@ -1,11 +1,18 @@
-const API_URL = 'http://localhost:5000';
+// API_URL is set by theme-loader.js (use window.API_URL to avoid redeclaration)
+const API_URL = window.API_URL || 'http://localhost:5000';
 let currentPage = 1;
 let searchQuery = '';
 let isEditing = false;
 
 // Check authentication
 const token = localStorage.getItem('token');
-const tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
+let tenant = {};
+try {
+    tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
+} catch (e) {
+    console.error('Failed to parse tenant data:', e);
+    localStorage.removeItem('tenant');
+}
 
 if (!token) {
     window.location.href = 'index.html';
@@ -15,9 +22,20 @@ if (!token) {
 document.getElementById('storeName').textContent = tenant.store_name || '';
 
 // Logout
-function handleLogout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('tenant');
+async function handleLogout() {
+    try {
+        // Call logout API to invalidate token on server
+        await fetch(`${API_URL}/api/tenants/logout`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+    } catch (error) {
+        // Continue with logout even if API call fails
+        console.error('Logout API error:', error);
+    }
+    localStorage.clear();
     window.location.href = 'index.html';
 }
 
@@ -132,7 +150,7 @@ function renderInventoryTable(items) {
                     <button class="btn" style="background: var(--primary); color: white; padding: 6px 12px; margin-right: 5px;"
                             onclick="editProduct(${item.id})">Edit</button>
                     <button class="btn" style="background: var(--danger); color: white; padding: 6px 12px;"
-                            onclick="deleteProduct(${item.id})">Delete</button>
+                            onclick="deleteProduct(${item.id}, event)">Delete</button>
                 </td>
             </tr>
         `;
@@ -214,6 +232,7 @@ function closeModal() {
 async function editProduct(id) {
     try {
         const response = await apiRequest(`/api/inventory?search=&page=1&limit=100`);
+        if (!response) return;
         const data = await response.json();
         const product = data.items.find(item => item.id === id);
 
@@ -318,11 +337,11 @@ async function handleProductSubmit(e) {
 }
 
 // Delete Product
-async function deleteProduct(id, buttonElement) {
+async function deleteProduct(id, e) {
     if (!confirm('Are you sure you want to delete this product?')) return;
 
-    // Get the delete button that was clicked (passed from onclick or find it)
-    const button = buttonElement || event.target.closest('button');
+    // Get the delete button that was clicked (passed from onclick event)
+    const button = e ? e.target.closest('button') : null;
     let originalText = '';
     if (button) {
         originalText = button.innerHTML;

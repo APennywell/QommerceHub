@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const paymentService = require('../services/paymentService');
+const orderService = require('../services/orderService');
 
 /**
  * @swagger
@@ -33,6 +34,12 @@ router.post('/create-intent', auth, async (req, res) => {
 
         if (!amount || !orderId || !customerEmail) {
             return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Validate order belongs to authenticated tenant
+        const order = await orderService.getOrderById(orderId, req.tenant.id);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
         }
 
         const result = await paymentService.createPaymentIntent({

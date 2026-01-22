@@ -1,5 +1,10 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(git rm:*)",
+      "Bash(npm start)",
+      "Bash(npm install:*)"
+    ],
     "additionalDirectories": [
       "c:\\Users\\qruci\\OneDrive\\Desktop\\myshop-platform"
     ]

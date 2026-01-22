@@ -1,16 +1,31 @@
-const API_URL = 'http://localhost:5000';
+// API_URL is set by theme-loader.js
+const API_URL = window.API_URL || 'http://localhost:5000';
 let currentPage = 1;
 let searchQuery = '';
 let isEditing = false;
 
 const token = localStorage.getItem('token');
-const tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
+let tenant = {};
+try {
+    tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
+} catch (e) {
+    console.error('Failed to parse tenant data:', e);
+    localStorage.removeItem('tenant');
+}
 
 if (!token) window.location.href = 'index.html';
 
 document.getElementById('storeName').textContent = tenant.store_name || '';
 
-function handleLogout() {
+async function handleLogout() {
+    try {
+        await fetch(`${API_URL}/api/tenants/logout`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    } catch (error) {
+        console.error('Logout API error:', error);
+    }
     localStorage.clear();
     window.location.href = 'index.html';
 }
@@ -35,6 +50,7 @@ async function loadCustomers(page = 1, search = '') {
     try {
         const params = new URLSearchParams({ page, limit: 10, search });
         const response = await apiRequest(`/api/customers?${params}`);
+        if (!response) return;
         const data = await response.json();
 
         if (data.items) {
@@ -88,7 +104,7 @@ function renderCustomersTable(items) {
                     <button class="btn" style="background: var(--primary); color: white; padding: 6px 12px; margin-right: 5px;"
                             onclick="editCustomer(${customer.id})">Edit</button>
                     <button class="btn" style="background: var(--danger); color: white; padding: 6px 12px;"
-                            onclick="deleteCustomer(${customer.id})">Delete</button>
+                            onclick="deleteCustomer(${customer.id}, event)">Delete</button>
                 </td>
             </tr>
         `;
@@ -144,6 +160,7 @@ function closeModal() {
 async function editCustomer(id) {
     try {
         const response = await apiRequest(`/api/customers?page=1&limit=100`);
+        if (!response) return;
         const data = await response.json();
         const customer = data.items.find(c => c.id === id);
 
@@ -216,11 +233,11 @@ async function handleCustomerSubmit(e) {
     }
 }
 
-async function deleteCustomer(id) {
+async function deleteCustomer(id, e) {
     if (!confirm('Are you sure you want to delete this customer?')) return;
 
     // Get the delete button that was clicked
-    const button = event.target.closest('button');
+    const button = e ? e.target.closest('button') : null;
     let originalText = '';
     if (button) {
         originalText = button.innerHTML;

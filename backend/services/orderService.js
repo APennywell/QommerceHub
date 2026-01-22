@@ -21,8 +21,25 @@ async function createOrder({ tenantId, customerId, items, notes }) {
 
         const order = orderResult.rows[0];
 
-        // Create order items and update inventory
+        // Create order items and update inventory with row locking to prevent race conditions
         for (const item of items) {
+            // Lock and check inventory in one query (SELECT FOR UPDATE)
+            const inventoryCheck = await client.query(
+                `SELECT id, quantity, name FROM inventory
+                WHERE id = $1 AND tenant_id = $2 AND is_deleted = FALSE
+                FOR UPDATE`,
+                [item.inventory_id, tenantId]
+            );
+
+            if (inventoryCheck.rows.length === 0) {
+                throw new Error(`Product not found: ${item.inventory_id}`);
+            }
+
+            const currentQuantity = inventoryCheck.rows[0].quantity;
+            if (currentQuantity < item.quantity) {
+                throw new Error(`Insufficient stock for "${inventoryCheck.rows[0].name}". Available: ${currentQuantity}, Requested: ${item.quantity}`);
+            }
+
             // Add order item
             await client.query(
                 `INSERT INTO order_items (order_id, inventory_id, quantity, price)
@@ -30,11 +47,11 @@ async function createOrder({ tenantId, customerId, items, notes }) {
                 [order.id, item.inventory_id, item.quantity, item.price]
             );
 
-            // Update inventory quantity
+            // Update inventory quantity (safe now due to FOR UPDATE lock)
             await client.query(
                 `UPDATE inventory
                 SET quantity = quantity - $1
-                WHERE id = $2 AND tenant_id = $3 AND quantity >= $1`,
+                WHERE id = $2 AND tenant_id = $3`,
                 [item.quantity, item.inventory_id, tenantId]
             );
         }

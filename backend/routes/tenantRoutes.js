@@ -7,6 +7,7 @@ const auth = require("../middleware/auth");
 const { authLimiter } = require("../middleware/rateLimiter");
 const { validate, schemas } = require("../middleware/validation");
 const { sendPasswordResetEmail } = require("../services/emailService");
+const { addToBlacklist } = require("../middleware/tokenBlacklist");
 
 const router = express.Router();
 
@@ -156,6 +157,33 @@ router.get("/me", auth, async (req, res) => {
     message: "Protected route access granted",
     tenant: req.tenant,
   });
+});
+
+/**
+ * @swagger
+ * /api/tenants/logout:
+ *   post:
+ *     summary: Logout and invalidate current token
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.post("/logout", auth, (req, res) => {
+  try {
+    // Add token to blacklist - it will be rejected on future requests
+    // Token expires from blacklist when JWT would naturally expire (24h)
+    addToBlacklist(req.token, 24 * 60 * 60 * 1000);
+
+    res.json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error("LOGOUT ERROR:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 /**

@@ -85,6 +85,28 @@ const schemas = {
       "any.required": "ID is required",
     }),
   }),
+
+  // Store customization validation
+  updateCustomization: Joi.object({
+    background_color: Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).optional().messages({
+      "string.pattern.base": "Background color must be a valid hex color (e.g., #ffffff)",
+    }),
+    primary_color: Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).optional().messages({
+      "string.pattern.base": "Primary color must be a valid hex color (e.g., #667eea)",
+    }),
+    secondary_color: Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).optional().messages({
+      "string.pattern.base": "Secondary color must be a valid hex color (e.g., #764ba2)",
+    }),
+    accent_color: Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).optional().messages({
+      "string.pattern.base": "Accent color must be a valid hex color (e.g., #10b981)",
+    }),
+    text_color: Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).optional().messages({
+      "string.pattern.base": "Text color must be a valid hex color (e.g., #111827)",
+    }),
+    animations_enabled: Joi.boolean().optional(),
+  }).min(1).messages({
+    "object.min": "At least one customization setting must be provided",
+  }),
 };
 
 // Validation middleware factory

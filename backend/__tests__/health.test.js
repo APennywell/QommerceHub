@@ -3,11 +3,11 @@ const app = require('../app');
 
 describe('Health Check Endpoints', () => {
   describe('GET /', () => {
-    it('should return API running message', async () => {
+    it('should serve frontend index.html', async () => {
       const response = await request(app).get('/');
 
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('message', 'API running');
+      expect(response.type).toBe('text/html');
     });
   });
 

@@ -22,7 +22,7 @@ async function getInventory(tenantId, { page = 1, limit = 10, search = '', sortB
 
     let query = `
         SELECT * FROM inventory
-        WHERE tenant_id = $1 AND deleted_at IS NULL
+        WHERE tenant_id = $1 AND is_deleted = FALSE
     `;
     const params = [tenantId];
 
@@ -46,7 +46,7 @@ async function getInventory(tenantId, { page = 1, limit = 10, search = '', sortB
 
     // Get total count for pagination metadata
     const countResult = await db.query(
-        `SELECT COUNT(*) FROM inventory WHERE tenant_id = $1 AND deleted_at IS NULL ${search ? 'AND (name ILIKE $2 OR sku ILIKE $2)' : ''}`,
+        `SELECT COUNT(*) FROM inventory WHERE tenant_id = $1 AND is_deleted = FALSE ${search ? 'AND (name ILIKE $2 OR sku ILIKE $2)' : ''}`,
         search ? [tenantId, `%${search}%`] : [tenantId]
     );
 
@@ -75,7 +75,7 @@ async function updateInventory(id, tenantId, { name, sku, quantity, price }) {
       price = COALESCE($4, price)
     WHERE id = $5
       AND tenant_id = $6
-      AND deleted_at IS NULL
+      AND is_deleted = FALSE
     RETURNING *
     `,
     [name, sku, quantity, price, id, tenantId]
@@ -88,7 +88,7 @@ async function updateInventory(id, tenantId, { name, sku, quantity, price }) {
 // RESTORE
 async function restoreInventory(id, tenantId) {
     const result = await db.query(
-        `UPDATE inventory SET deleted_at = NULL WHERE id = $1 AND tenant_id = $2  AND deleted_at IS NOT NULL RETURNING *`,
+        `UPDATE inventory SET is_deleted = FALSE WHERE id = $1 AND tenant_id = $2 AND is_deleted = TRUE RETURNING *`,
         [id, tenantId]
     );
     return result.rows[0];
@@ -97,7 +97,7 @@ async function restoreInventory(id, tenantId) {
 // DELETE (soft delete)
 async function deleteInventory(id, tenantId) {
     const result = await db.query(
-        "UPDATE inventory SET deleted_at = NOW() WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL RETURNING *",
+        "UPDATE inventory SET is_deleted = TRUE WHERE id = $1 AND tenant_id = $2 AND is_deleted = FALSE RETURNING *",
         [id, tenantId]
     );
     return result.rows[0];

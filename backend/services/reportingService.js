@@ -88,7 +88,7 @@ async function generateInventoryReportExcel(tenantId) {
                     ELSE 'Well Stocked'
                 END as stock_status
             FROM inventory
-            WHERE tenant_id = $1 AND deleted_at IS NULL
+            WHERE tenant_id = $1 AND is_deleted = FALSE
             ORDER BY name ASC`,
             [tenantId]
         );

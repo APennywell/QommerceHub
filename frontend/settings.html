@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Settings - QommerceHub</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .settings-card h3 {
+            color: var(--gray-900);
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .color-picker-group label {
+            flex: 1;
+            color: var(--gray-700);
+            font-size: 0.9em;
+        }
+
+        .color-picker-group input[type="color"] {
+            width: 50px;
+            height: 36px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .color-picker-group .color-value {
+            font-family: monospace;
+            font-size: 0.85em;
+            color: var(--gray-600);
+            width: 70px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--gray-300);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--gray-50);
+        }
+
+        .upload-area.has-file {
+            border-style: solid;
+            border-color: var(--success);
+        }
+
+        .upload-preview {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+        }
+
+        .toggle-switch label {
+            color: var(--gray-700);
+        }
+
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-300);
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle input:checked + .toggle-slider {
+            background-color: var(--primary);
+        }
+
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .preset-themes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .preset-theme {
+            padding: 12px;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .preset-theme:hover {
+            border-color: var(--primary);
+        }
+
+        .preset-theme.active {
+            border-color: var(--primary);
+            background: var(--gray-50);
+        }
+
+        .preset-colors {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .preset-colors span {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .preset-theme small {
+            color: var(--gray-600);
+            font-size: 0.8em;
+        }
+
+        .preview-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+
+        .preview-panel h3 {
+            margin-bottom: 16px;
+            color: var(--gray-900);
+        }
+
+        .preview-box {
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 200px;
+            transition: all 0.3s;
+        }
+
+        .preview-navbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .preview-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            font-weight: 500;
+            cursor: default;
+        }
+
+        .preview-card-demo {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-reset {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn-reset:hover {
+            background: var(--gray-300);
+        }
+    </style>
+</head>
+<body class="dashboard">
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="assets/logo.svg" alt="QommerceHub" class="nav-logo store-logo" style="height: 32px; vertical-align: middle; margin-right: 8px;">
+            <span>QommerceHub</span>
+        </div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <a href="dashboard.html" style="color: var(--gray-700); text-decoration: none;">Inventory</a>
+            <a href="customers.html" style="color: var(--gray-700); text-decoration: none;">Customers</a>
+            <a href="orders.html" style="color: var(--gray-700); text-decoration: none;">Orders</a>
+            <a href="analytics.html" style="color: var(--gray-700); text-decoration: none;">Analytics</a>
+            <a href="barcode-scanner.html" style="color: var(--gray-700); text-decoration: none;">Scanner</a>
+            <a href="settings.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Settings</a>
+            <span class="store-name" id="storeName"></span>
+            <button class="btn-logout" onclick="handleLogout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card" style="margin-bottom: 24px;">
+            <h1 style="color: var(--gray-900); margin-bottom: 8px;">Store Settings</h1>
+            <p style="color: var(--gray-600);">Customize your store's appearance with colors, logos, and animations.</p>
+        </div>
+
+        <!-- Theme Presets -->
+        <div class="settings-card" style="margin-bottom: 24px;">
+            <h3>🎨 Quick Theme Presets</h3>
+            <div class="preset-themes" id="presetThemes">
+                <div class="preset-theme" data-theme="default">
+                    <div class="preset-colors">
+                        <span style="background: #667eea;"></span>
+                        <span style="background: #764ba2;"></span>
+                        <span style="background: #10b981;"></span>
+                    </div>
+                    <small>Default</small>
+                </div>
+                <div class="preset-theme" data-theme="ocean">
+                    <div class="preset-colors">
+                        <span style="background: #0077b6;"></span>
+                        <span style="background: #00b4d8;"></span>
+                        <span style="background: #90e0ef;"></span>
+                    </div>
+                    <small>Ocean</small>
+                </div>
+                <div class="preset-theme" data-theme="forest">
+                    <div class="preset-colors">
+                        <span style="background: #2d6a4f;"></span>
+                        <span style="background: #40916c;"></span>
+                        <span style="background: #95d5b2;"></span>
+                    </div>
+                    <small>Forest</small>
+                </div>
+                <div class="preset-theme" data-theme="sunset">
+                    <div class="preset-colors">
+                        <span style="background: #f72585;"></span>
+                        <span style="background: #7209b7;"></span>
+                        <span style="background: #4361ee;"></span>
+                    </div>
+                    <small>Sunset</small>
+                </div>
+                <div class="preset-theme" data-theme="minimal">
+                    <div class="preset-colors">
+                        <span style="background: #212529;"></span>
+                        <span style="background: #495057;"></span>
+                        <span style="background: #6c757d;"></span>
+                    </div>
+                    <small>Minimal</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-grid">
+            <!-- Logo Upload -->
+            <div class="settings-card">
+                <h3>🏪 Store Logo</h3>
+                <div class="upload-area" id="logoUploadArea" onclick="document.getElementById('logoInput').click()">
+                    <img id="logoPreview" class="upload-preview" style="display: none;">
+                    <div id="logoPlaceholder">
+                        <p style="font-size: 2em; margin-bottom: 8px;">📷</p>
+                        <p style="color: var(--gray-600);">Click to upload logo</p>
+                        <small style="color: var(--gray-500);">Max 2MB. JPG, PNG, GIF, WebP</small>
+                    </div>
+                </div>
+                <input type="file" id="logoInput" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
+                <button class="btn btn-danger" id="removeLogoBtn" style="display: none; width: 100%;" onclick="handleRemoveLogo()">Remove Logo</button>
+            </div>
+
+            <!-- Background Image -->
+            <div class="settings-card">
+                <h3>🖼️ Background Image</h3>
+                <div class="upload-area" id="bgUploadArea" onclick="document.getElementById('bgInput').click()">
+                    <img id="bgPreview" class="upload-preview" style="display: none;">
+                    <div id="bgPlaceholder">
+                        <p style="font-size: 2em; margin-bottom: 8px;">🌄</p>
+                        <p style="color: var(--gray-600);">Click to upload background</p>
+                        <small style="color: var(--gray-500);">Max 10MB. JPG, PNG, GIF, WebP</small>
+                    </div>
+                </div>
+                <input type="file" id="bgInput" accept="image/*" style="display: none;" onchange="handleBackgroundUpload(event)">
+                <button class="btn btn-danger" id="removeBgBtn" style="display: none; width: 100%;" onclick="handleRemoveBackground()">Remove Background</button>
+            </div>
+        </div>
+
+        <div class="settings-grid">
+            <!-- Color Settings -->
+            <div class="settings-card">
+                <h3>🎨 Colors</h3>
+
+                <div class="color-picker-group">
+                    <label>Primary Color</label>
+                    <input type="color" id="primaryColor" value="#667eea" onchange="handleColorChange()">
+                    <span class="color-value" id="primaryColorValue">#667eea</span>
+                </div>
+
+                <div class="color-picker-group">
+                    <label>Secondary Color</label>
+                    <input type="color" id="secondaryColor" value="#764ba2" onchange="handleColorChange()">
+                    <span class="color-value" id="secondaryColorValue">#764ba2</span>
+                </div>
+
+                <div class="color-picker-group">
+                    <label>Accent Color</label>
+                    <input type="color" id="accentColor" value="#10b981" onchange="handleColorChange()">
+                    <span class="color-value" id="accentColorValue">#10b981</span>
+                </div>
+
+                <div class="color-picker-group">
+                    <label>Text Color</label>
+                    <input type="color" id="textColor" value="#111827" onchange="handleColorChange()">
+                    <span class="color-value" id="textColorValue">#111827</span>
+                </div>
+
+                <div class="color-picker-group">
+                    <label>Background Color</label>
+                    <input type="color" id="backgroundColor" value="#f9fafb" onchange="handleColorChange()">
+                    <span class="color-value" id="backgroundColorValue">#f9fafb</span>
+                </div>
+            </div>
+
+            <!-- Animation Settings -->
+            <div class="settings-card">
+                <h3>✨ Animations</h3>
+
+                <div class="toggle-switch">
+                    <label>Enable Animations</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="animationsEnabled" checked onchange="handleAnimationToggle()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <p style="color: var(--gray-500); font-size: 0.85em; margin-top: 8px;">
+                    Disable animations for a faster, simpler experience. This affects transitions, fades, and hover effects.
+                </p>
+            </div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="preview-panel">
+            <h3>👁️ Live Preview</h3>
+            <div class="preview-box" id="previewBox">
+                <div class="preview-navbar" id="previewNavbar" style="background: linear-gradient(135deg, var(--primary), var(--secondary));">
+                    <span style="color: white; font-weight: 600;">Your Store</span>
+                </div>
+                <div class="preview-card-demo">
+                    <p style="color: var(--text-color); margin-bottom: 12px;">This is how your dashboard will look.</p>
+                    <button class="preview-btn" id="previewBtn" style="background: var(--primary);">Sample Button</button>
+                    <span style="color: var(--accent); margin-left: 12px; font-weight: 500;">Success text</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn btn-reset" onclick="handleReset()">Reset to Defaults</button>
+            <button class="btn btn-primary" onclick="handleSave()">Save Changes</button>
+        </div>
+    </div>
+
+    <script src="theme-loader.js"></script>
+    <script src="settings.js"></script>
+</body>
+</html>

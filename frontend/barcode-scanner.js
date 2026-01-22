@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:5000/api';
+// API_URL is set by theme-loader.js (base URL without /api)
+const BASE_URL = window.API_URL || 'http://localhost:5000';
+const API_URL = BASE_URL + '/api';
 
 // Check authentication
 function checkAuth() {
@@ -30,7 +32,16 @@ async function loadStoreName() {
 }
 
 // Logout handler
-function handleLogout() {
+async function handleLogout() {
+    const token = localStorage.getItem('token');
+    try {
+        await fetch(`${API_URL}/tenants/logout`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+    } catch (error) {
+        console.error('Logout API error:', error);
+    }
     localStorage.clear();
     window.location.href = 'index.html';
 }
@@ -208,7 +219,7 @@ function displayProduct(product, barcode) {
     productInfoDiv.innerHTML = `
         <div style="display: grid; grid-template-columns: auto 1fr; gap: 15px; align-items: start;">
             ${product.image_url ? `
-                <img src="${API_URL}${product.image_url}" alt="${product.name}"
+                <img src="${BASE_URL}${product.image_url}" alt="${product.name}"
                      style="width: 150px; height: 150px; object-fit: cover; border-radius: 8px; border: 2px solid var(--gray-200);">
             ` : `
                 <div style="width: 150px; height: 150px; background: var(--gray-200); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--gray-500);">

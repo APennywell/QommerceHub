@@ -1,0 +1,25 @@
+databases:
+  - name: myshop-db
+    databaseName: myshop_platform
+    user: myshop_user
+    plan: free
+
+services:
+  - type: web
+    name: myshop-platform
+    runtime: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm run migrate && node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: myshop-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        sync: false

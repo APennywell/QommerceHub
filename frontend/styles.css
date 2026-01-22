@@ -8,6 +8,7 @@
     --primary: #667eea;
     --primary-dark: #5568d3;
     --secondary: #764ba2;
+    --accent: #10b981;
     --success: #10b981;
     --danger: #ef4444;
     --warning: #f59e0b;
@@ -20,6 +21,10 @@
     --gray-600: #4b5563;
     --gray-700: #374151;
     --gray-900: #111827;
+    --text-color: #111827;
+    --background-color: #f9fafb;
+    --animation-duration: 0.3s;
+    --transition-duration: 0.2s;
 }
 
 @keyframes fadeIn {
@@ -182,6 +187,9 @@ body {
     background: var(--gray-50);
     min-height: 100vh;
     padding: 0;
+    display: block;
+    align-items: initial;
+    justify-content: initial;
 }
 
 .navbar {

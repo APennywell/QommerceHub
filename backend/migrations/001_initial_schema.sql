@@ -67,19 +67,28 @@ CREATE TABLE IF NOT EXISTS order_items (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes for better query performance
+-- Create indexes for better query performance (wrapped in DO block to handle missing columns)
 CREATE INDEX IF NOT EXISTS idx_tenants_email ON tenants(email);
 CREATE INDEX IF NOT EXISTS idx_tenants_reset_token ON tenants(reset_token);
 CREATE INDEX IF NOT EXISTS idx_inventory_tenant ON inventory(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_inventory_sku ON inventory(tenant_id, sku);
-CREATE INDEX IF NOT EXISTS idx_inventory_barcode ON inventory(tenant_id, barcode);
-CREATE INDEX IF NOT EXISTS idx_inventory_category ON inventory(tenant_id, category);
 CREATE INDEX IF NOT EXISTS idx_customers_tenant ON customers(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(tenant_id, email);
 CREATE INDEX IF NOT EXISTS idx_orders_tenant ON orders(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+
+-- These indexes depend on columns that may need to be added separately
+DO $$ BEGIN
+    CREATE INDEX IF NOT EXISTS idx_inventory_barcode ON inventory(tenant_id, barcode);
+EXCEPTION WHEN undefined_column THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE INDEX IF NOT EXISTS idx_inventory_category ON inventory(tenant_id, category);
+EXCEPTION WHEN undefined_column THEN NULL;
+END $$;
 
 -- Comments for documentation
 COMMENT ON TABLE tenants IS 'Shop owners and businesses using the platform';

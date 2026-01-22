@@ -7,7 +7,10 @@
     "start": "node server.js",
     "migrate": "node scripts/migrate.js",
     "test": "jest --coverage --detectOpenHandles --forceExit",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:all": "node scripts/test-all.js",
+    "seed:demo": "node scripts/seed-demo.js",
+    "demo:setup": "npm run migrate && node scripts/seed-demo.js"
   },
   "jest": {
     "testEnvironment": "node",
@@ -45,7 +48,6 @@
     "nodemailer": "^7.0.12",
     "pdfkit": "^0.17.2",
     "pg": "^8.16.3",
-    "quagga": "^0.12.1",
     "stripe": "^20.1.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
