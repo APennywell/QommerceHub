@@ -9,6 +9,7 @@ services:
     name: myshop-platform
     runtime: node
     plan: free
+    repo: https://github.com/APennywell/QommerceHub
     branch: main
     buildCommand: npm install && cd backend && npm install
     startCommand: cd backend && npm run migrate && node server.js
