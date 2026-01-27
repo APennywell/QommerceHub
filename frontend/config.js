@@ -19,13 +19,33 @@
         // API URL - auto-detected
         API_URL: getApiUrl(),
 
-        // Stripe Publishable Key
-        // Get your key from: https://dashboard.stripe.com/apikeys
-        // Use pk_test_... for testing, pk_live_... for production
-        STRIPE_PUBLISHABLE_KEY: 'pk_test_51QfTESKxSqcyAJGqzSQdG0aCBDhXCAkFysmFeIHDNmtKwj1qAnkgHJlKHj17wLrUu79Qbp6N1NyiSeDO1U30XT6700cI2YqCwW'
+        // Stripe Publishable Key - loaded from backend
+        STRIPE_PUBLISHABLE_KEY: null
     };
 
     // Make config available globally
     window.API_URL = window.APP_CONFIG.API_URL;
-    window.STRIPE_PUBLISHABLE_KEY = window.APP_CONFIG.STRIPE_PUBLISHABLE_KEY;
+    window.STRIPE_PUBLISHABLE_KEY = null;
+
+    // Fetch public config from backend (non-blocking)
+    async function loadPublicConfig() {
+        try {
+            const response = await fetch(`${window.API_URL}/api/config/public`);
+            if (response.ok) {
+                const config = await response.json();
+                if (config.stripePublishableKey) {
+                    window.APP_CONFIG.STRIPE_PUBLISHABLE_KEY = config.stripePublishableKey;
+                    window.STRIPE_PUBLISHABLE_KEY = config.stripePublishableKey;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load public config:', error);
+        }
+    }
+
+    // Load config immediately
+    loadPublicConfig();
+
+    // Also expose the loader function for pages that need to wait
+    window.loadPublicConfig = loadPublicConfig;
 })();

@@ -31,20 +31,7 @@ async function loadStoreName() {
     }
 }
 
-// Logout handler
-async function handleLogout() {
-    const token = localStorage.getItem('token');
-    try {
-        await fetch(`${API_URL}/tenants/logout`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-    } catch (error) {
-        console.error('Logout API error:', error);
-    }
-    localStorage.clear();
-    window.location.href = 'login.html';
-}
+// handleLogout is now in utils.js
 
 // Initialize Quagga scanner
 let scannerActive = false;

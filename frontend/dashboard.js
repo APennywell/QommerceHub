@@ -4,61 +4,13 @@ let currentPage = 1;
 let searchQuery = '';
 let isEditing = false;
 
-// Check authentication
-const token = localStorage.getItem('token');
-let tenant = {};
-try {
-    tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
-} catch (e) {
-    console.error('Failed to parse tenant data:', e);
-    localStorage.removeItem('tenant');
-}
-
-if (!token) {
-    window.location.href = 'login.html';
-}
+// Check authentication (uses shared utils.js)
+const { token, tenant } = requireAuth();
 
 // Display store name
 document.getElementById('storeName').textContent = tenant.store_name || '';
 
-// Logout
-async function handleLogout() {
-    try {
-        // Call logout API to invalidate token on server
-        await fetch(`${API_URL}/api/tenants/logout`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-    } catch (error) {
-        // Continue with logout even if API call fails
-        console.error('Logout API error:', error);
-    }
-    localStorage.clear();
-    window.location.href = 'login.html';
-}
-
-// API Helper
-async function apiRequest(endpoint, options = {}) {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            ...options.headers
-        }
-    });
-
-    if (response.status === 401) {
-        handleLogout();
-        return null;
-    }
-
-    return response;
-}
-
-// Load Inventory
+// Load Inventory (handleLogout and apiRequest are now in utils.js)
 async function loadInventory(page = 1, search = '') {
     try {
         const params = new URLSearchParams({
@@ -375,14 +327,7 @@ async function deleteProduct(id, e) {
     }
 }
 
-// Utility
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// Image handling functions
+// Image handling functions (escapeHtml is now in utils.js)
 function previewImage() {
     const file = document.getElementById('productImage').files[0];
     const preview = document.getElementById('imagePreview');
@@ -416,7 +361,147 @@ document.addEventListener('DOMContentLoaded', function() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
     }
+
+    // Check for first login onboarding
+    checkOnboarding();
 });
+
+// Onboarding checklist for first-time users
+async function checkOnboarding() {
+    // Check if this is first login
+    if (tenant.firstLogin) {
+        showOnboardingModal();
+    }
+}
+
+function showOnboardingModal() {
+    // Create onboarding modal if it doesn't exist
+    if (!document.getElementById('onboardingModal')) {
+        const modalHtml = `
+            <div id="onboardingModal" class="modal active">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h2 style="color: var(--primary);">Welcome to QommerceHub!</h2>
+                        <button class="modal-close" onclick="closeOnboarding()">&times;</button>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 4em; margin-bottom: 10px;">🎉</div>
+                        <p style="color: var(--gray-600); font-size: 1.1em;">
+                            Your store <strong>${escapeHtml(tenant.store_name)}</strong> is ready!
+                        </p>
+                    </div>
+                    <div style="background: var(--gray-50); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 15px; color: var(--gray-700);">Quick Start Checklist</h3>
+                        <div class="onboarding-checklist">
+                            <label class="checklist-item">
+                                <input type="checkbox" id="checkProducts" onchange="updateChecklist()">
+                                <span>Add your first products</span>
+                            </label>
+                            <label class="checklist-item">
+                                <input type="checkbox" id="checkCustomers" onchange="updateChecklist()">
+                                <span>Add your first customer</span>
+                            </label>
+                            <label class="checklist-item">
+                                <input type="checkbox" id="checkSettings" onchange="updateChecklist()">
+                                <span>Customize your store</span>
+                            </label>
+                            <label class="checklist-item">
+                                <input type="checkbox" id="checkAnalytics" onchange="updateChecklist()">
+                                <span>View analytics dashboard</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-success" onclick="startWithProducts()" style="flex: 1;">
+                            Add Products
+                        </button>
+                        <button class="btn" onclick="closeOnboarding()" style="flex: 1; background: var(--gray-200); color: var(--gray-700);">
+                            Explore First
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <style>
+                .onboarding-checklist {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+                .checklist-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 12px 15px;
+                    background: white;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    border: 2px solid transparent;
+                }
+                .checklist-item:hover {
+                    border-color: var(--primary);
+                }
+                .checklist-item input[type="checkbox"] {
+                    width: 20px;
+                    height: 20px;
+                    accent-color: var(--primary);
+                }
+                .checklist-item input:checked + span {
+                    text-decoration: line-through;
+                    color: var(--gray-500);
+                }
+            </style>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    } else {
+        document.getElementById('onboardingModal').classList.add('active');
+    }
+}
+
+function closeOnboarding() {
+    document.getElementById('onboardingModal').classList.remove('active');
+    completeOnboarding();
+}
+
+function startWithProducts() {
+    closeOnboarding();
+    openAddModal();
+}
+
+function updateChecklist() {
+    // Track progress locally
+    const checks = [
+        document.getElementById('checkProducts').checked,
+        document.getElementById('checkCustomers').checked,
+        document.getElementById('checkSettings').checked,
+        document.getElementById('checkAnalytics').checked
+    ];
+
+    const completed = checks.filter(c => c).length;
+    if (completed === 4) {
+        setTimeout(() => {
+            closeOnboarding();
+            alert('Great job! You\'ve completed the getting started checklist!');
+        }, 500);
+    }
+}
+
+async function completeOnboarding() {
+    try {
+        await apiRequest('/api/tenants/complete-onboarding', {
+            method: 'POST'
+        });
+        // Update local tenant data
+        tenant.firstLogin = false;
+        const authData = JSON.parse(localStorage.getItem('auth') || '{}');
+        if (authData.tenant) {
+            authData.tenant.firstLogin = false;
+            localStorage.setItem('auth', JSON.stringify(authData));
+        }
+    } catch (err) {
+        console.error('Failed to complete onboarding:', err);
+    }
+}
 
 // Initial load
 loadInventory();

@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { isBlacklisted } = require("./tokenBlacklist");
 
-module.exports = function (req, res, next) {
+module.exports = async function (req, res, next) {
     const authHeader = req.headers["authorization"];
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -11,8 +11,14 @@ module.exports = function (req, res, next) {
     const token = authHeader.split(" ")[1];
 
     // Check if token is blacklisted (logged out)
-    if (isBlacklisted(token)) {
-        return res.status(401).json({ error: "Token has been revoked" });
+    try {
+        const blacklisted = await isBlacklisted(token);
+        if (blacklisted) {
+            return res.status(401).json({ error: "Token has been revoked" });
+        }
+    } catch (error) {
+        console.error('Error checking token blacklist:', error);
+        // Continue with token validation if blacklist check fails
     }
 
     try {

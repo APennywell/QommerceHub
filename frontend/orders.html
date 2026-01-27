@@ -154,12 +154,10 @@
 
     <!-- Stripe.js -->
     <script src="https://js.stripe.com/v3/"></script>
-    <!-- Configuration (loaded inline to prevent blocking issues) -->
-    <script>
-        // Frontend Configuration - Stripe Publishable Key
-        window.STRIPE_PUBLISHABLE_KEY = 'pk_test_51QfTESKxSqcyAJGqzSQdG0aCBDhXCAkFysmFeIHDNmtKwj1qAnkgHJlKHj17wLrUu79Qbp6N1NyiSeDO1U30XT6700cI2YqCwW';
-    </script>
+    <!-- Configuration loaded from backend via config.js -->
+    <script src="config.js"></script>
     <script src="theme-loader.js"></script>
+    <script src="utils.js"></script>
     <script src="orders.js"></script>
 </body>
 </html>

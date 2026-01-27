@@ -18,7 +18,8 @@ describe('Authentication Endpoints', () => {
           id: 1,
           email: testUser.email,
           store_name: testUser.store_name,
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          email_verified: false
         }]
       });
 
@@ -27,9 +28,11 @@ describe('Authentication Endpoints', () => {
         .send(testUser);
 
       expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('message', 'Tenant created successfully');
+      expect(response.body).toHaveProperty('message');
+      expect(response.body.message).toContain('Account created');
       expect(response.body.tenant).toHaveProperty('email', testUser.email);
       expect(response.body.tenant).toHaveProperty('store_name', testUser.store_name);
+      expect(response.body).toHaveProperty('emailVerificationRequired', true);
     });
 
     it('should reject signup with invalid email', async () => {
@@ -64,14 +67,29 @@ describe('Authentication Endpoints', () => {
     it('should login successfully with valid credentials', async () => {
       const hashedPassword = await bcrypt.hash(testUser.password, 10);
 
+      // Mock for isAccountLocked check
+      db.query.mockResolvedValueOnce({
+        rows: [{ locked_until: null }]
+      });
+
+      // Mock for login query
       db.query.mockResolvedValueOnce({
         rows: [{
           id: 1,
           email: testUser.email,
           password_hash: hashedPassword,
-          store_name: testUser.store_name
+          store_name: testUser.store_name,
+          email_verified: true,
+          role: 'owner',
+          first_login: false
         }]
       });
+
+      // Mock for recordLoginAttempt
+      db.query.mockResolvedValueOnce({ rows: [] });
+
+      // Mock for resetFailedLogins
+      db.query.mockResolvedValueOnce({ rows: [] });
 
       const response = await request(app)
         .post('/api/tenants/login')
@@ -80,6 +98,7 @@ describe('Authentication Endpoints', () => {
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message', 'Login successful');
       expect(response.body).toHaveProperty('token');
+      expect(response.body).toHaveProperty('refreshToken');
       expect(response.body.tenant).toHaveProperty('email', testUser.email);
 
       // Verify JWT token is valid
@@ -91,14 +110,32 @@ describe('Authentication Endpoints', () => {
     it('should reject login with wrong password', async () => {
       const hashedPassword = await bcrypt.hash(testUser.password, 10);
 
+      // Mock for isAccountLocked check
+      db.query.mockResolvedValueOnce({
+        rows: [{ locked_until: null }]
+      });
+
+      // Mock for login query
       db.query.mockResolvedValueOnce({
         rows: [{
           id: 1,
           email: testUser.email,
           password_hash: hashedPassword,
-          store_name: testUser.store_name
+          store_name: testUser.store_name,
+          email_verified: true,
+          role: 'owner',
+          first_login: false
         }]
       });
+
+      // Mock for recordLoginAttempt
+      db.query.mockResolvedValueOnce({ rows: [] });
+
+      // Mock for handleFailedLogin - increment count
+      db.query.mockResolvedValueOnce({ rows: [] });
+
+      // Mock for handleFailedLogin - check count
+      db.query.mockResolvedValueOnce({ rows: [{ failed_login_count: 1 }] });
 
       const response = await request(app)
         .post('/api/tenants/login')
@@ -109,6 +146,13 @@ describe('Authentication Endpoints', () => {
     });
 
     it('should reject login with non-existent email', async () => {
+      // Mock for isAccountLocked check
+      db.query.mockResolvedValueOnce({ rows: [] });
+
+      // Mock for login query
+      db.query.mockResolvedValueOnce({ rows: [] });
+
+      // Mock for recordLoginAttempt
       db.query.mockResolvedValueOnce({ rows: [] });
 
       const response = await request(app)
@@ -131,9 +175,9 @@ describe('Authentication Endpoints', () => {
   describe('GET /api/tenants/me', () => {
     it('should return tenant info for authenticated user', async () => {
       const token = jwt.sign(
-        { tenantId: 1, email: testUser.email },
+        { tenantId: 1, email: testUser.email, type: 'access' },
         process.env.JWT_SECRET,
-        { expiresIn: '1d' }
+        { expiresIn: '1h' }
       );
 
       db.query.mockResolvedValueOnce({
@@ -166,6 +210,55 @@ describe('Authentication Endpoints', () => {
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('error');
+    });
+  });
+
+  describe('POST /api/tenants/refresh', () => {
+    it('should issue new access token with valid refresh token', async () => {
+      const refreshToken = jwt.sign(
+        { tenantId: 1, type: 'refresh' },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      db.query.mockResolvedValueOnce({
+        rows: [{
+          id: 1,
+          email: testUser.email,
+          role: 'owner'
+        }]
+      });
+
+      const response = await request(app)
+        .post('/api/tenants/refresh')
+        .send({ refreshToken });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('token');
+      expect(response.body).toHaveProperty('expiresIn', '1h');
+    });
+
+    it('should reject invalid refresh token', async () => {
+      const response = await request(app)
+        .post('/api/tenants/refresh')
+        .send({ refreshToken: 'invalid-token' });
+
+      expect(response.status).toBe(401);
+    });
+
+    it('should reject access token used as refresh token', async () => {
+      const accessToken = jwt.sign(
+        { tenantId: 1, email: testUser.email, type: 'access' },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      const response = await request(app)
+        .post('/api/tenants/refresh')
+        .send({ refreshToken: accessToken });
+
+      expect(response.status).toBe(401);
+      expect(response.body).toHaveProperty('error', 'Invalid token type');
     });
   });
 

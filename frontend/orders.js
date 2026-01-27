@@ -3,47 +3,12 @@ const API_URL = window.API_URL || 'http://localhost:5000';
 let currentPage = 1;
 let statusFilter = '';
 
-const token = localStorage.getItem('token');
-let tenant = {};
-try {
-    tenant = JSON.parse(localStorage.getItem('tenant') || '{}');
-} catch (e) {
-    console.error('Failed to parse tenant data:', e);
-    localStorage.removeItem('tenant');
-}
-
-if (!token) window.location.href = 'login.html';
+// Check authentication (uses shared utils.js)
+const { token, tenant } = requireAuth();
 
 document.getElementById('storeName').textContent = tenant.store_name || '';
 
-async function handleLogout() {
-    try {
-        await fetch(`${API_URL}/api/tenants/logout`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-    } catch (error) {
-        console.error('Logout API error:', error);
-    }
-    localStorage.clear();
-    window.location.href = 'login.html';
-}
-
-async function apiRequest(endpoint, options = {}) {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            ...options.headers
-        }
-    });
-    if (response.status === 401) {
-        handleLogout();
-        return null;
-    }
-    return response;
-}
+// handleLogout and apiRequest are now in utils.js
 
 async function loadOrders(page = 1, status = '') {
     try {
@@ -446,11 +411,7 @@ function getStatusBadgeClass(status) {
     return getStatusClass(status);
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+// escapeHtml is now in utils.js
 
 // Payment modal functions
 let currentPaymentOrder = null;

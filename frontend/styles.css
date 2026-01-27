@@ -648,3 +648,396 @@ textarea:disabled {
     cursor: not-allowed;
     background-color: var(--gray-100);
 }
+
+/* ==========================================
+   MOBILE RESPONSIVE STYLES
+   ========================================== */
+
+/* Tablet breakpoint (768px and below) */
+@media (max-width: 768px) {
+    /* Navbar adjustments */
+    .navbar {
+        padding: 12px 15px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .navbar-brand {
+        font-size: 1.2em;
+    }
+
+    .navbar-user {
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .store-name {
+        font-size: 0.85em;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .btn-logout {
+        padding: 6px 12px;
+        font-size: 0.8em;
+    }
+
+    /* Container */
+    .container {
+        padding: 15px;
+    }
+
+    /* Stats grid */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 15px;
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.8em;
+    }
+
+    .stat-value {
+        font-size: 1.5em;
+    }
+
+    .stat-label {
+        font-size: 0.8em;
+    }
+
+    /* Cards */
+    .card {
+        padding: 15px;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .card-title {
+        font-size: 1.1em;
+    }
+
+    /* Tables - horizontal scroll */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    table th, table td {
+        padding: 10px 8px;
+        font-size: 0.85em;
+    }
+
+    /* Modal */
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+        margin: 10px;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 8px 16px;
+        font-size: 0.85em;
+    }
+
+    .btn-primary {
+        padding: 12px;
+    }
+
+    /* Forms */
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px 12px;
+        font-size: 16px; /* Prevents iOS zoom */
+    }
+
+    /* Pagination */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .pagination button {
+        padding: 6px 10px;
+        font-size: 0.85em;
+    }
+
+    /* Search bar */
+    .search-bar input {
+        padding: 10px 12px;
+        font-size: 16px;
+    }
+
+    /* Badge */
+    .badge {
+        padding: 4px 10px;
+        font-size: 0.75em;
+    }
+
+    /* Login form */
+    .login-card {
+        padding: 25px;
+    }
+
+    .logo h1 {
+        font-size: 2em;
+    }
+}
+
+/* Mobile breakpoint (480px and below) */
+@media (max-width: 480px) {
+    /* Navbar - stack vertically */
+    .navbar {
+        padding: 10px;
+    }
+
+    .navbar-brand {
+        font-size: 1.1em;
+    }
+
+    .navbar-user {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .store-name {
+        max-width: 100px;
+        font-size: 0.8em;
+    }
+
+    /* Stats - single column */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .stat-card {
+        flex-direction: row;
+        text-align: left;
+        padding: 12px;
+    }
+
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.5em;
+    }
+
+    .stat-value {
+        font-size: 1.3em;
+    }
+
+    /* Container */
+    .container {
+        padding: 10px;
+    }
+
+    /* Card */
+    .card {
+        padding: 12px;
+        border-radius: 8px;
+    }
+
+    .card-header {
+        gap: 10px;
+    }
+
+    .card-title {
+        font-size: 1em;
+    }
+
+    /* Table adjustments */
+    table th, table td {
+        padding: 8px 6px;
+        font-size: 0.8em;
+    }
+
+    /* Modal full-screen on mobile */
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .modal-header {
+        position: sticky;
+        top: 0;
+        background: white;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    /* Buttons */
+    .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+
+    /* Button group on mobile */
+    .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    /* Empty state */
+    .empty-state {
+        padding: 40px 15px;
+    }
+
+    .empty-state-icon {
+        font-size: 3em;
+    }
+
+    /* Login adjustments */
+    .login-container {
+        padding: 10px;
+    }
+
+    .login-card {
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    .logo h1 {
+        font-size: 1.8em;
+    }
+
+    .logo p {
+        font-size: 0.85em;
+    }
+
+    .form-container h2 {
+        font-size: 1.2em;
+    }
+
+    /* Pagination */
+    .pagination button {
+        padding: 8px;
+        min-width: 36px;
+    }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    .btn, button {
+        min-height: 44px;
+    }
+
+    table td {
+        padding: 14px 8px;
+    }
+
+    .pagination button {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* Remove hover effects on touch devices */
+    .stat-card:hover,
+    .card:hover {
+        transform: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .btn:hover::before {
+        display: none;
+    }
+
+    .navbar a::after {
+        display: none;
+    }
+}
+
+/* Utility classes for responsive visibility */
+.hide-mobile {
+    display: block;
+}
+
+.show-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+
+    .show-mobile {
+        display: block !important;
+    }
+}
+
+/* Table wrapper for horizontal scroll */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 15px;
+}
+
+/* Action buttons in tables */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    flex-wrap: nowrap;
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .action-buttons .btn {
+        width: 100%;
+        margin-bottom: 0;
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .btn-logout,
+    .modal,
+    .pagination,
+    .action-buttons {
+        display: none !important;
+    }
+
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}

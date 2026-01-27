@@ -70,6 +70,14 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Public config endpoint (no auth required)
+// Returns non-sensitive configuration for frontend
+app.get("/api/config/public", (req, res) => {
+  res.json({
+    stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || null
+  });
+});
+
 // Serve frontend files (public)
 app.use(express.static(path.join(__dirname, '../frontend')));
 

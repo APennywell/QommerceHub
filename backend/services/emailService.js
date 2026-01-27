@@ -281,9 +281,119 @@ async function sendPasswordResetEmail({ email, resetToken, resetUrl }) {
     }
 }
 
+/**
+ * Send email verification link
+ */
+async function sendVerificationEmail({ email, storeName, verificationUrl }) {
+    try {
+        const transporter = await initializeTransporter();
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || '"QommerceHub" <noreply@qommercehub.com>',
+            to: email,
+            subject: 'Verify Your Email - QommerceHub',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">✉️ Verify Your Email</h1>
+                    </div>
+                    <div style="padding: 30px; background: #f9fafb;">
+                        <p style="font-size: 16px;">Welcome to QommerceHub!</p>
+                        <p>Thank you for creating your store <strong>${escapeHtml(storeName)}</strong>. Please verify your email address to activate your account.</p>
+
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="${verificationUrl}" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                                Verify Email Address
+                            </a>
+                        </div>
+
+                        <p style="color: #6b7280; font-size: 14px;">This link will expire in <strong>24 hours</strong>.</p>
+                        <p style="color: #6b7280; font-size: 14px;">If you didn't create an account, you can safely ignore this email.</p>
+                    </div>
+                    <div style="background: #e5e7eb; padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+                        <p>© ${new Date().getFullYear()} QommerceHub. All rights reserved.</p>
+                    </div>
+                </div>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('📧 Verification email sent! Preview URL:', nodemailer.getTestMessageUrl(info));
+        }
+
+        return { success: true, messageId: info.messageId, previewUrl: nodemailer.getTestMessageUrl(info) };
+    } catch (error) {
+        console.error('Verification email failed:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Send welcome email after verification
+ */
+async function sendWelcomeEmail({ email, storeName }) {
+    try {
+        const transporter = await initializeTransporter();
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
+
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || '"QommerceHub" <noreply@qommercehub.com>',
+            to: email,
+            subject: 'Welcome to QommerceHub! 🎉',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">🎉 Welcome to QommerceHub!</h1>
+                    </div>
+                    <div style="padding: 30px; background: #f9fafb;">
+                        <p style="font-size: 16px;">Hi there!</p>
+                        <p>Your store <strong>${escapeHtml(storeName)}</strong> is now ready. Here's how to get started:</p>
+
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                            <h3 style="color: #667eea; margin-top: 0;">Quick Start Checklist</h3>
+                            <ul style="padding-left: 20px; line-height: 2;">
+                                <li>➕ Add your first products</li>
+                                <li>🎨 Customize your store appearance</li>
+                                <li>💳 Set up payment methods</li>
+                                <li>👥 Invite team members</li>
+                            </ul>
+                        </div>
+
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="${frontendUrl}/dashboard.html" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                                Go to Dashboard
+                            </a>
+                        </div>
+
+                        <p style="color: #6b7280; font-size: 14px;">Need help? Check out our documentation or contact support.</p>
+                    </div>
+                    <div style="background: #e5e7eb; padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+                        <p>© ${new Date().getFullYear()} QommerceHub. All rights reserved.</p>
+                    </div>
+                </div>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('📧 Welcome email sent! Preview URL:', nodemailer.getTestMessageUrl(info));
+        }
+
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error('Welcome email failed:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
 module.exports = {
     sendOrderConfirmation,
     sendOrderStatusUpdate,
     sendLowStockAlert,
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    sendVerificationEmail,
+    sendWelcomeEmail
 };

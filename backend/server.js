@@ -19,6 +19,12 @@ validateEnv();
 
 console.log("🔥 SERVER.JS LOADED 🔥");
 
+// Initialize Redis (optional - for token blacklist persistence)
+const { initRedis, closeRedis } = require("./config/redis");
+initRedis().catch(err => {
+  console.warn('Redis initialization skipped:', err.message);
+});
+
 const app = require("./app");
 
 // SERVER START - bind to 0.0.0.0 for Railway/cloud hosting
@@ -33,4 +39,23 @@ const server = app.listen(PORT, HOST, () => {
 server.on('error', (err) => {
   console.error('Server failed to start:', err);
   process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  await closeRedis();
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, shutting down gracefully...');
+  await closeRedis();
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
 });

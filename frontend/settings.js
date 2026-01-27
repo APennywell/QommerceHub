@@ -59,20 +59,7 @@ function loadStoreName() {
     document.getElementById('storeName').textContent = tenant.store_name || tenant.name || '';
 }
 
-// Handle logout
-async function handleLogout() {
-    const token = localStorage.getItem('token');
-    try {
-        await fetch(`${API_URL}/api/tenants/logout`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-    } catch (error) {
-        console.error('Logout API error:', error);
-    }
-    localStorage.clear();
-    window.location.href = 'login.html';
-}
+// handleLogout is now in utils.js
 
 // Initialize page
 async function init() {

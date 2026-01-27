@@ -17,7 +17,17 @@ jest.mock('../services/emailService', () => ({
   sendOrderConfirmation: jest.fn().mockResolvedValue({ success: true }),
   sendOrderStatusUpdate: jest.fn().mockResolvedValue({ success: true }),
   sendLowStockAlert: jest.fn().mockResolvedValue({ success: true }),
-  sendPasswordResetEmail: jest.fn().mockResolvedValue({ success: true })
+  sendPasswordResetEmail: jest.fn().mockResolvedValue({ success: true }),
+  sendVerificationEmail: jest.fn().mockResolvedValue({ success: true, previewUrl: 'http://test' }),
+  sendWelcomeEmail: jest.fn().mockResolvedValue({ success: true })
+}));
+
+// Mock the audit log (don't fail if table doesn't exist)
+jest.mock('../middleware/auditLog', () => ({
+  logAudit: jest.fn().mockResolvedValue(undefined),
+  auditMiddleware: jest.fn(() => (req, res, next) => next()),
+  captureOldValues: jest.fn(() => (req, res, next) => next()),
+  getAuditLogs: jest.fn().mockResolvedValue([])
 }));
 
 // Mock the customer service
