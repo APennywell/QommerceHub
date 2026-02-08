@@ -1021,6 +1021,55 @@ textarea:disabled {
     }
 }
 
+/* Navigation links container */
+.nav-links {
+    flex-wrap: wrap;
+}
+
+/* Wide modal variant (e.g., Create Order) */
+.modal-content-wide {
+    max-width: 700px;
+}
+
+/* Table responsive - always allow horizontal scroll when needed */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    /* Nav links - wrap and adjust spacing on tablet */
+    .nav-links {
+        gap: 10px !important;
+        justify-content: flex-end;
+    }
+
+    /* Wide modal respects tablet sizing */
+    .modal-content-wide {
+        max-width: none;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Nav links - tighter spacing on mobile */
+    .nav-links {
+        width: 100%;
+        gap: 8px !important;
+        justify-content: center;
+    }
+
+    .nav-links a {
+        font-size: 0.85em;
+        white-space: nowrap;
+    }
+
+    /* Wide modal goes full-screen on mobile (inherits .modal-content 480px rules) */
+    .modal-content-wide {
+        max-width: none;
+    }
+}
+
 /* Print styles */
 @media print {
     .navbar,

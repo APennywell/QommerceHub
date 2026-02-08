@@ -18,6 +18,8 @@ async function createInventory({tenantId, name, sku, quantity, price}) {
 
 // READ (active items only) with pagination and search
 async function getInventory(tenantId, { page = 1, limit = 10, search = '', sortBy = 'created_at', sortOrder = 'DESC' } = {}) {
+    page = Math.max(1, page);
+    limit = Math.min(Math.max(1, limit), 100);
     const offset = (page - 1) * limit;
 
     let query = `

@@ -128,7 +128,7 @@ async function generateInvoice(order, storeName = 'QommerceHub') {
             currentY += 20;
 
             // Tax (if applicable)
-            const taxRate = 0.00; // Set to 0 for now, can be configured
+            const taxRate = parseFloat(process.env.TAX_RATE || '0');
             const tax = subtotal * taxRate;
             if (tax > 0) {
                 doc.fillColor('#666666')

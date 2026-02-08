@@ -13,6 +13,8 @@ async function createCustomer({ tenantId, name, email, phone, address }) {
 
 // READ customers with pagination
 async function getCustomers(tenantId, { page = 1, limit = 10, search = '' } = {}) {
+    page = Math.max(1, page);
+    limit = Math.min(Math.max(1, limit), 100);
     const offset = (page - 1) * limit;
 
     let query = `

@@ -1,5 +1,5 @@
 // API_URL is set by theme-loader.js
-const API_URL = window.API_URL || 'http://localhost:5000';
+const API_URL = window.API_URL || 'http://localhost:5001';
 let currentPeriod = 30;
 let salesChart = null;
 let statusChart = null;
@@ -394,6 +394,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    // Static element listeners (migrated from inline handlers)
+    const periodFilter = document.getElementById('periodFilter');
+    if (periodFilter) {
+        periodFilter.addEventListener('change', changePeriod);
+    }
+
+    const downloadSalesBtn = document.getElementById('downloadSalesBtn');
+    if (downloadSalesBtn) {
+        downloadSalesBtn.addEventListener('click', function(e) {
+            downloadSalesReport(e);
+        });
+    }
+
+    const downloadInventoryBtn = document.getElementById('downloadInventoryBtn');
+    if (downloadInventoryBtn) {
+        downloadInventoryBtn.addEventListener('click', function(e) {
+            downloadInventoryReport(e);
+        });
+    }
+
+    const downloadCustomersBtn = document.getElementById('downloadCustomersBtn');
+    if (downloadCustomersBtn) {
+        downloadCustomersBtn.addEventListener('click', function(e) {
+            downloadCustomersReport(e);
+        });
     }
 });
 

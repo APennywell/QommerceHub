@@ -39,8 +39,10 @@ app.use(helmet({
 // CORS with restricted origins
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
   'http://localhost:5000',
+  'http://localhost:5001',
   'http://localhost:3000',
-  'http://127.0.0.1:5000'
+  'http://127.0.0.1:5000',
+  'http://127.0.0.1:5001'
 ];
 
 app.use(cors({
@@ -55,7 +57,13 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json({ limit: '1mb' })); // Reduced from 10mb for security
+// Parse JSON for all routes except Stripe webhook (which needs raw body)
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/payments/webhook') {
+    return next();
+  }
+  express.json({ limit: '1mb' })(req, res, next);
+});
 
 // Apply rate limiting to all API routes (skip in test environment)
 if (process.env.NODE_ENV !== 'test') {
@@ -63,11 +71,23 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // Health Check endpoint
-app.get("/health", (req, res) => {
-  res.json({
+app.get("/health", async (req, res) => {
+  const health = {
     status: "ok",
-    time: new Date().toISOString()
-  });
+    time: new Date().toISOString(),
+    database: "ok"
+  };
+
+  try {
+    const db = require("./db");
+    await db.query("SELECT 1");
+  } catch (err) {
+    health.status = "degraded";
+    health.database = "unreachable";
+  }
+
+  const statusCode = health.status === "ok" ? 200 : 503;
+  res.status(statusCode).json(health);
 });
 
 // Public config endpoint (no auth required)

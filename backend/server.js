@@ -34,6 +34,14 @@ const HOST = '0.0.0.0';
 const server = app.listen(PORT, HOST, () => {
   console.log(`Server running on http://${HOST}:${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
+  // Schedule report cleanup every 6 hours
+  try {
+    const { cleanupOldReports } = require('./services/reportingService');
+    setInterval(() => {
+      try { cleanupOldReports(7); } catch (e) { /* ignore */ }
+    }, 6 * 60 * 60 * 1000);
+  } catch (e) { /* reportingService not critical */ }
 });
 
 server.on('error', (err) => {

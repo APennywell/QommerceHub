@@ -101,14 +101,21 @@ async function isBlacklisted(token) {
 }
 
 /**
- * Invalidate all tokens for a tenant (e.g., on password change)
- * This is a simple implementation - for production, store token version in DB
+ * Invalidate all tokens for a tenant (e.g., on password change or logout-all)
+ * Increments token_version in DB so all existing tokens become invalid
  * @param {number} tenantId - The tenant ID
  */
-function invalidateAllForTenant(tenantId) {
-  // In this simple implementation, we can't invalidate by tenant
-  // For production, implement token versioning in the database
-  console.log(`Token invalidation requested for tenant ${tenantId}`);
+async function invalidateAllForTenant(tenantId) {
+  try {
+    const db = require('../db');
+    await db.query(
+      'UPDATE tenants SET token_version = COALESCE(token_version, 0) + 1 WHERE id = $1',
+      [tenantId]
+    );
+  } catch (err) {
+    // Column may not exist yet
+    console.warn(`Token invalidation for tenant ${tenantId}:`, err.message);
+  }
 }
 
 /**

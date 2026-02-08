@@ -1,11 +1,22 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy');
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+if (!stripeKey) {
+  console.warn('STRIPE_SECRET_KEY not configured — payment endpoints will return errors');
+}
+const stripe = stripeKey ? require('stripe')(stripeKey) : null;
+
+function ensureStripe() {
+  if (!stripe) {
+    throw new Error('Stripe is not configured. Set STRIPE_SECRET_KEY environment variable.');
+  }
+  return stripe;
+}
 
 /**
  * Create a payment intent for an order
  */
 async function createPaymentIntent({ amount, currency = 'usd', orderId, customerEmail }) {
     try {
-        const paymentIntent = await stripe.paymentIntents.create({
+        const paymentIntent = await ensureStripe().paymentIntents.create({
             amount: Math.round(amount * 100), // Convert to cents
             currency: currency,
             metadata: {
@@ -37,7 +48,7 @@ async function createPaymentIntent({ amount, currency = 'usd', orderId, customer
  */
 async function confirmPayment(paymentIntentId) {
     try {
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        const paymentIntent = await ensureStripe().paymentIntents.retrieve(paymentIntentId);
 
         return {
             success: true,
@@ -59,7 +70,7 @@ async function confirmPayment(paymentIntentId) {
  */
 async function createRefund({ paymentIntentId, amount, reason = 'requested_by_customer' }) {
     try {
-        const refund = await stripe.refunds.create({
+        const refund = await ensureStripe().refunds.create({
             payment_intent: paymentIntentId,
             amount: amount ? Math.round(amount * 100) : undefined, // Partial or full refund
             reason: reason
@@ -85,7 +96,7 @@ async function createRefund({ paymentIntentId, amount, reason = 'requested_by_cu
  */
 async function getPaymentStatus(paymentIntentId) {
     try {
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        const paymentIntent = await ensureStripe().paymentIntents.retrieve(paymentIntentId);
 
         return {
             success: true,
@@ -108,7 +119,7 @@ async function getPaymentStatus(paymentIntentId) {
  */
 async function createStripeCustomer({ email, name, phone }) {
     try {
-        const customer = await stripe.customers.create({
+        const customer = await ensureStripe().customers.create({
             email: email,
             name: name,
             phone: phone,

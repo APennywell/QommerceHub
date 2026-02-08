@@ -1,5 +1,5 @@
 // API_URL is set by theme-loader.js
-const API_URL = window.API_URL || 'http://localhost:5000';
+const API_URL = window.API_URL || 'http://localhost:5001';
 
 // Theme presets
 const THEME_PRESETS = {

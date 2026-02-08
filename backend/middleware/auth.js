@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { isBlacklisted } = require("./tokenBlacklist");
+const db = require("../db");
 
 module.exports = async function (req, res, next) {
     const authHeader = req.headers["authorization"];
@@ -18,17 +19,34 @@ module.exports = async function (req, res, next) {
         }
     } catch (error) {
         console.error('Error checking token blacklist:', error);
-        // Continue with token validation if blacklist check fails
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+        // Check token_version for multi-device logout support
+        if (decoded.tokenVersion !== undefined) {
+            try {
+                const result = await db.query(
+                    "SELECT token_version FROM tenants WHERE id = $1",
+                    [decoded.tenantId]
+                );
+                if (result.rows.length > 0 && result.rows[0].token_version !== null) {
+                    if (decoded.tokenVersion < result.rows[0].token_version) {
+                        return res.status(401).json({ error: "Token has been revoked (password changed or logout-all)" });
+                    }
+                }
+            } catch (dbErr) {
+                // Column may not exist yet; skip check
+            }
+        }
+
         req.tenant = {
             id: decoded.tenantId,
             email: decoded.email,
+            role: decoded.role || 'owner',
         };
-        req.token = token; // Store token for potential logout
+        req.token = token;
 
         next();
     } catch (err) {

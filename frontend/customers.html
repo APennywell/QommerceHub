@@ -13,7 +13,7 @@
             <img src="assets/logo.svg" alt="QommerceHub" style="height: 32px; vertical-align: middle; margin-right: 8px;">
             <span>QommerceHub</span>
         </div>
-        <div style="display: flex; gap: 20px; align-items: center;">
+        <div class="nav-links" style="display: flex; gap: 20px; align-items: center;">
             <a href="dashboard.html" style="color: var(--gray-700); text-decoration: none;">Inventory</a>
             <a href="customers.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Customers</a>
             <a href="orders.html" style="color: var(--gray-700); text-decoration: none;">Orders</a>
@@ -29,16 +29,15 @@
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">👥 Customer Management</h2>
-                <button class="btn btn-success" onclick="openAddModal()">+ Add Customer</button>
+                <button class="btn btn-success" id="addCustomerBtn">+ Add Customer</button>
             </div>
 
             <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="🔍 Search customers by name or email..."
-                       oninput="handleSearch()">
+                <input type="text" id="searchInput" placeholder="🔍 Search customers by name or email...">
             </div>
 
-            <div id="customersTable">
-                <div class="loading">Loading customers...</div>
+            <div id="customersTable" class="table-responsive" aria-live="polite">
+                <div class="loading" role="status" aria-label="Loading">Loading customers...</div>
             </div>
 
             <div class="pagination" id="pagination"></div>
@@ -46,28 +45,28 @@
     </div>
 
     <!-- Add/Edit Customer Modal -->
-    <div id="customerModal" class="modal">
+    <div id="customerModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalTitle">Add Customer</h2>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
             </div>
-            <form id="customerForm" onsubmit="handleCustomerSubmit(event)">
+            <form id="customerForm">
                 <input type="hidden" id="customerId">
                 <div class="form-group">
-                    <label>Full Name *</label>
+                    <label for="customerName">Full Name *</label>
                     <input type="text" id="customerName" required>
                 </div>
                 <div class="form-group">
-                    <label>Email *</label>
+                    <label for="customerEmail">Email *</label>
                     <input type="email" id="customerEmail" required>
                 </div>
                 <div class="form-group">
-                    <label>Phone</label>
+                    <label for="customerPhone">Phone</label>
                     <input type="tel" id="customerPhone">
                 </div>
                 <div class="form-group">
-                    <label>Address</label>
+                    <label for="customerAddress">Address</label>
                     <textarea id="customerAddress" rows="3"></textarea>
                 </div>
                 <button type="submit" class="btn-primary">Save Customer</button>
@@ -75,6 +74,7 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script src="theme-loader.js"></script>
     <script src="utils.js"></script>
     <script src="customers.js"></script>

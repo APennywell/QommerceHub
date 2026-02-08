@@ -106,14 +106,15 @@ async function resetFailedLogins(email) {
  * Generate tokens (access + refresh)
  */
 function generateTokens(tenant) {
+  const tokenVersion = tenant.token_version || 0;
   const accessToken = jwt.sign(
-    { tenantId: tenant.id, email: tenant.email, role: tenant.role || 'owner', type: 'access' },
+    { tenantId: tenant.id, email: tenant.email, role: tenant.role || 'owner', type: 'access', tokenVersion },
     process.env.JWT_SECRET,
     { expiresIn: ACCESS_TOKEN_EXPIRY }
   );
 
   const refreshToken = jwt.sign(
-    { tenantId: tenant.id, type: 'refresh' },
+    { tenantId: tenant.id, type: 'refresh', tokenVersion },
     process.env.JWT_SECRET,
     { expiresIn: REFRESH_TOKEN_EXPIRY }
   );
@@ -183,7 +184,7 @@ router.post("/signup", authLimiter, validate(schemas.signup), async (req, res) =
     const tenant = result.rows[0];
 
     // Send verification email
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5001';
     const verificationUrl = `${frontendUrl}/verify-email.html?token=${verificationToken}`;
 
     const emailResult = await sendVerificationEmail({
@@ -346,7 +347,7 @@ router.post("/resend-verification", authLimiter, async (req, res) => {
       [verificationTokenHash, verificationExpiry, tenant.id]
     );
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5001';
     const verificationUrl = `${frontendUrl}/verify-email.html?token=${verificationToken}`;
 
     const emailResult = await sendVerificationEmail({
@@ -408,7 +409,7 @@ router.post("/login", authLimiter, validate(schemas.login), async (req, res) => 
     }
 
     const result = await db.query(
-      "SELECT id, email, password_hash, store_name, email_verified, role, first_login FROM tenants WHERE email = $1",
+      "SELECT id, email, password_hash, store_name, email_verified, role, first_login, token_version FROM tenants WHERE email = $1",
       [email]
     );
 
@@ -570,6 +571,150 @@ router.get("/me", auth, async (req, res) => {
 
 /**
  * @swagger
+ * /api/tenants/me:
+ *   put:
+ *     summary: Update current tenant profile
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               store_name: { type: string, example: My Updated Store }
+ *               email: { type: string, format: email, example: newemail@example.com }
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.put("/me", auth, async (req, res) => {
+  try {
+    const { store_name, email } = req.body;
+
+    if (!store_name && !email) {
+      return res.status(400).json({ error: "Provide at least store_name or email to update" });
+    }
+
+    const fields = [];
+    const values = [];
+    let paramIndex = 1;
+
+    if (store_name) {
+      fields.push(`store_name = $${paramIndex++}`);
+      values.push(store_name);
+    }
+    if (email) {
+      fields.push(`email = $${paramIndex++}`);
+      values.push(email);
+    }
+
+    values.push(req.tenant.id);
+
+    const result = await db.query(
+      `UPDATE tenants SET ${fields.join(', ')} WHERE id = $${paramIndex} RETURNING id, email, store_name`,
+      values
+    );
+
+    logAudit({
+      tenantId: req.tenant.id,
+      action: 'update',
+      entityType: 'tenant',
+      entityId: req.tenant.id,
+      newValues: { store_name, email },
+      req
+    });
+
+    res.json({ message: "Profile updated", tenant: result.rows[0] });
+  } catch (err) {
+    console.error("UPDATE PROFILE ERROR:", err);
+    if (err.code === '23505') {
+      return res.status(400).json({ error: "Email already in use" });
+    }
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+/**
+ * @swagger
+ * /api/tenants/change-password:
+ *   put:
+ *     summary: Change password for authenticated tenant
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentPassword, newPassword]
+ *             properties:
+ *               currentPassword: { type: string }
+ *               newPassword: { type: string, minLength: 8 }
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Current password incorrect
+ */
+router.put("/change-password", auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Current password and new password are required" });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: "New password must be at least 8 characters" });
+    }
+
+    const result = await db.query(
+      "SELECT password_hash FROM tenants WHERE id = $1",
+      [req.tenant.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Tenant not found" });
+    }
+
+    const passwordMatch = await bcrypt.compare(currentPassword, result.rows[0].password_hash);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: "Current password is incorrect" });
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await db.query(
+      "UPDATE tenants SET password_hash = $1 WHERE id = $2",
+      [newHash, req.tenant.id]
+    );
+
+    logAudit({
+      tenantId: req.tenant.id,
+      action: 'update',
+      entityType: 'tenant',
+      entityId: req.tenant.id,
+      newValues: { password_changed: true },
+      req
+    });
+
+    res.json({ message: "Password changed successfully" });
+  } catch (err) {
+    console.error("CHANGE PASSWORD ERROR:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+/**
+ * @swagger
  * /api/tenants/complete-onboarding:
  *   post:
  *     summary: Mark onboarding as complete
@@ -680,7 +825,7 @@ router.post("/forgot-password", authLimiter, async (req, res) => {
       [resetTokenHash, resetTokenExpiry, tenant.id]
     );
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5001';
     const resetUrl = `${frontendUrl}/reset-password.html?token=${resetToken}`;
 
     const emailResult = await sendPasswordResetEmail({

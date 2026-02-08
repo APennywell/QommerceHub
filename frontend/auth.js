@@ -1,5 +1,5 @@
 // API_URL is set by config.js
-const API_URL = window.API_URL || 'http://localhost:5000';
+const API_URL = window.API_URL || 'http://localhost:5001';
 
 function showMessage(message, type = 'error') {
     const messageEl = document.getElementById('message');

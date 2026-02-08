@@ -1,5 +1,5 @@
 // API_URL is set by theme-loader.js (base URL without /api)
-const BASE_URL = window.API_URL || 'http://localhost:5000';
+const BASE_URL = window.API_URL || 'http://localhost:5001';
 const API_URL = BASE_URL + '/api';
 
 // Check authentication
@@ -221,8 +221,8 @@ function displayProduct(product, barcode) {
                 <p style="margin: 5px 0;"><strong>Quantity:</strong> ${product.quantity} ${stockStatus}</p>
                 <p style="margin: 5px 0;"><strong>Category:</strong> ${product.category || 'N/A'}</p>
                 <div style="margin-top: 15px; display: flex; gap: 10px;">
-                    <button class="btn btn-success" onclick="startScanner()">Scan Another</button>
-                    <button class="btn" style="background: var(--info); color: white;" onclick="window.location.href='dashboard.html'">
+                    <button class="btn btn-success" data-action="start-scanner">Scan Another</button>
+                    <button class="btn" style="background: var(--info); color: white;" data-action="go-to-inventory">
                         View in Inventory
                     </button>
                 </div>
@@ -246,8 +246,8 @@ function displayNotFound(barcode) {
                 No product found with barcode/SKU: <strong>${barcode}</strong>
             </p>
             <div style="display: flex; gap: 10px; justify-content: center;">
-                <button class="btn btn-success" onclick="startScanner()">Scan Another</button>
-                <button class="btn" style="background: var(--primary); color: white;" onclick="window.location.href='dashboard.html'">
+                <button class="btn btn-success" data-action="start-scanner">Scan Another</button>
+                <button class="btn" style="background: var(--primary); color: white;" data-action="go-to-inventory">
                     Add to Inventory
                 </button>
             </div>
@@ -370,6 +370,54 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    // Static element listeners (migrated from inline handlers)
+    const scanBtn = document.getElementById('scanBtn');
+    if (scanBtn) {
+        scanBtn.addEventListener('click', startScanner);
+    }
+
+    const stopScannerBtn = document.getElementById('stopScannerBtn');
+    if (stopScannerBtn) {
+        stopScannerBtn.addEventListener('click', stopScanner);
+    }
+
+    const lookupBtn = document.getElementById('lookupBtn');
+    if (lookupBtn) {
+        lookupBtn.addEventListener('click', lookupBarcode);
+    }
+
+    const goToInventoryBtn = document.getElementById('goToInventoryBtn');
+    if (goToInventoryBtn) {
+        goToInventoryBtn.addEventListener('click', function() {
+            window.location.href = 'dashboard.html';
+        });
+    }
+
+    const goToOrdersBtn = document.getElementById('goToOrdersBtn');
+    if (goToOrdersBtn) {
+        goToOrdersBtn.addEventListener('click', function() {
+            window.location.href = 'orders.html';
+        });
+    }
+
+    const exportHistoryBtn = document.getElementById('exportHistoryBtn');
+    if (exportHistoryBtn) {
+        exportHistoryBtn.addEventListener('click', exportHistory);
+    }
+
+    // Event delegation for dynamically generated buttons in results area
+    const resultsDiv = document.getElementById('results');
+    if (resultsDiv) {
+        resultsDiv.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+            if (action === 'start-scanner') startScanner();
+            if (action === 'go-to-inventory') window.location.href = 'dashboard.html';
+        });
     }
 
     // Allow Enter key in manual input

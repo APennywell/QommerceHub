@@ -24,6 +24,12 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: ALLOWED_ORIGINS
-        value: https://myshop-platform.onrender.com,https://www.qommercehub.com
+        value: https://myshop-platform.onrender.com,https://qommercehub.com,https://www.qommercehub.com
       - key: FRONTEND_URL
-        value: https://myshop-platform.onrender.com
+        value: https://qommercehub.com
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false

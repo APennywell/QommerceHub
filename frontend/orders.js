@@ -1,5 +1,5 @@
 // API_URL is set by theme-loader.js
-const API_URL = window.API_URL || 'http://localhost:5000';
+const API_URL = window.API_URL || 'http://localhost:5001';
 let currentPage = 1;
 let statusFilter = '';
 
@@ -34,7 +34,7 @@ function renderOrdersTable(items) {
             <div class="empty-state">
                 <div class="empty-state-icon">📦</div>
                 <p>No orders found</p>
-                <button class="btn btn-success" onclick="openCreateOrderModal()">Create Your First Order</button>
+                <button class="btn btn-success" data-action="create">Create Your First Order</button>
             </div>
         `;
         return;
@@ -71,8 +71,8 @@ function renderOrdersTable(items) {
                 <td>${new Date(order.created_at).toLocaleDateString()}</td>
                 <td>
                     <button class="btn" style="background: var(--primary); color: white; padding: 6px 12px; margin-right: 5px;"
-                            onclick="viewOrderDetails(${order.id})">View</button>
-                    <select onchange="updateOrderStatus(${order.id}, this.value)" style="padding: 6px;">
+                            data-action="view" data-id="${order.id}">View</button>
+                    <select data-action="status-change" data-id="${order.id}" style="padding: 6px;">
                         <option value="">Change Status...</option>
                         <option value="pending">Pending</option>
                         <option value="processing">Processing</option>
@@ -98,9 +98,9 @@ function renderPagination(pagination) {
     }
 
     container.innerHTML = `
-        <button onclick="changePage(${page - 1})" ${page === 1 ? 'disabled' : ''}>Previous</button>
+        <button data-action="prev-page" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
         <span>Page ${page} of ${totalPages}</span>
-        <button onclick="changePage(${page + 1})" ${page === totalPages ? 'disabled' : ''}>Next</button>
+        <button data-action="next-page" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
     `;
 }
 
@@ -156,12 +156,12 @@ function addOrderItem() {
     itemDiv.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; margin-bottom: 10px; align-items: center;';
 
     itemDiv.innerHTML = `
-        <select class="item-product" onchange="updateItemPrice(this)" required>
+        <select class="item-product" data-action="product-change" required>
             <option value="">Select Product</option>
         </select>
-        <input type="number" class="item-quantity" min="1" value="1" placeholder="Qty" required onchange="calculateTotal()">
+        <input type="number" class="item-quantity" min="1" value="1" placeholder="Qty" required data-action="quantity-change">
         <input type="number" class="item-price" step="0.01" min="0" placeholder="Price" readonly>
-        <button type="button" onclick="removeOrderItem(this)" style="padding: 8px 12px; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;">×</button>
+        <button type="button" data-action="remove-item" style="padding: 8px 12px; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;">×</button>
     `;
 
     container.appendChild(itemDiv);
@@ -280,7 +280,7 @@ async function viewOrderDetails(orderId) {
             const total = item.quantity * parseFloat(item.price);
             itemsHtml += `
                 <tr>
-                    <td>${item.product_name} (${item.sku})</td>
+                    <td>${escapeHtml(item.product_name)} (${escapeHtml(item.sku)})</td>
                     <td>${item.quantity}</td>
                     <td>$${parseFloat(item.price).toFixed(2)}</td>
                     <td>$${total.toFixed(2)}</td>
@@ -292,11 +292,11 @@ async function viewOrderDetails(orderId) {
         const detailsContent = `
             <div>
                 <p><strong>Order ID:</strong> #${order.id}</p>
-                <p><strong>Customer:</strong> ${order.customer_name} (${order.customer_email})</p>
+                <p><strong>Customer:</strong> ${escapeHtml(order.customer_name)} (${escapeHtml(order.customer_email)})</p>
                 <p><strong>Status:</strong> <span class="badge badge-${getStatusBadgeClass(order.status)}">${order.status}</span></p>
                 <p><strong>Total:</strong> $${parseFloat(order.total_amount).toFixed(2)}</p>
                 <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleString()}</p>
-                ${order.notes ? `<p><strong>Notes:</strong> ${order.notes}</p>` : ''}
+                ${order.notes ? `<p><strong>Notes:</strong> ${escapeHtml(order.notes)}</p>` : ''}
                 <h3 style="margin-top: 20px;">Order Items:</h3>
                 ${itemsHtml}
                 <div style="margin-top: 20px; display: flex; gap: 15px; align-items: flex-end;">
@@ -309,9 +309,9 @@ async function viewOrderDetails(orderId) {
                             <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                         </select>
                     </div>
-                    <button onclick="updateOrderStatus(${order.id}, null, event)" class="btn btn-success" style="margin-bottom: 10px;">Update Status</button>
-                    <button onclick="downloadInvoice(${order.id})" class="btn" style="background: var(--primary); color: white; margin-bottom: 10px;">📄 Download Invoice</button>
-                    <button onclick="openPaymentModal(${order.id}, '${escapeHtml(order.customer_name)}', ${parseFloat(order.total_amount)}, '${escapeHtml(order.customer_email || '')}')" class="btn" style="background: var(--success); color: white; margin-bottom: 10px;">💳 Process Payment</button>
+                    <button data-action="update-status" data-id="${order.id}" class="btn btn-success" style="margin-bottom: 10px;">Update Status</button>
+                    <button data-action="download-invoice" data-id="${order.id}" class="btn" style="background: var(--primary); color: white; margin-bottom: 10px;">📄 Download Invoice</button>
+                    <button data-action="process-payment" data-id="${order.id}" data-customer="${escapeHtml(order.customer_name)}" data-amount="${parseFloat(order.total_amount)}" data-email="${escapeHtml(order.customer_email || '')}" class="btn" style="background: var(--success); color: white; margin-bottom: 10px;">💳 Process Payment</button>
                 </div>
             </div>
         `;
@@ -619,6 +619,139 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    // Static element listeners (migrated from inline handlers)
+    const newOrderBtn = document.getElementById('newOrderBtn');
+    if (newOrderBtn) {
+        newOrderBtn.addEventListener('click', openCreateOrderModal);
+    }
+
+    const statusFilterEl = document.getElementById('statusFilter');
+    if (statusFilterEl) {
+        statusFilterEl.addEventListener('change', handleStatusFilter);
+    }
+
+    const closeCreateOrderBtn = document.getElementById('closeCreateOrderBtn');
+    if (closeCreateOrderBtn) {
+        closeCreateOrderBtn.addEventListener('click', closeCreateOrderModal);
+    }
+
+    const orderForm = document.getElementById('orderForm');
+    if (orderForm) {
+        orderForm.addEventListener('submit', handleOrderSubmit);
+    }
+
+    const addOrderItemBtn = document.getElementById('addOrderItemBtn');
+    if (addOrderItemBtn) {
+        addOrderItemBtn.addEventListener('click', addOrderItem);
+    }
+
+    const closeOrderDetailsBtn = document.getElementById('closeOrderDetailsBtn');
+    if (closeOrderDetailsBtn) {
+        closeOrderDetailsBtn.addEventListener('click', closeOrderDetailsModal);
+    }
+
+    const closePaymentBtn = document.getElementById('closePaymentBtn');
+    if (closePaymentBtn) {
+        closePaymentBtn.addEventListener('click', closePaymentModal);
+    }
+
+    const paymentMethodEl = document.getElementById('paymentMethod');
+    if (paymentMethodEl) {
+        paymentMethodEl.addEventListener('change', togglePaymentMethod);
+    }
+
+    const paymentButton = document.getElementById('paymentButton');
+    if (paymentButton) {
+        paymentButton.addEventListener('click', processPayment);
+    }
+
+    // Event delegation for orders table (handles View, Create, Status Change)
+    const ordersTable = document.getElementById('ordersTable');
+    if (ordersTable) {
+        ordersTable.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+            const id = btn.dataset.id;
+
+            if (action === 'view') viewOrderDetails(parseInt(id));
+            if (action === 'create') openCreateOrderModal();
+        });
+
+        ordersTable.addEventListener('change', function(e) {
+            const select = e.target.closest('[data-action="status-change"]');
+            if (!select || !select.value) return;
+
+            const id = select.dataset.id;
+            updateOrderStatus(parseInt(id), select.value);
+            select.value = ''; // Reset dropdown
+        });
+    }
+
+    // Event delegation for pagination
+    const pagination = document.getElementById('pagination');
+    if (pagination) {
+        pagination.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-action]');
+            if (!btn || btn.disabled) return;
+
+            const action = btn.dataset.action;
+            const page = parseInt(btn.dataset.page);
+
+            if (action === 'prev-page' || action === 'next-page') {
+                changePage(page);
+            }
+        });
+    }
+
+    // Event delegation for order items (create order modal)
+    const orderItems = document.getElementById('orderItems');
+    if (orderItems) {
+        orderItems.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-action="remove-item"]');
+            if (btn) {
+                btn.closest('.order-item').remove();
+                calculateTotal();
+            }
+        });
+
+        orderItems.addEventListener('change', function(e) {
+            const select = e.target.closest('[data-action="product-change"]');
+            if (select) {
+                updateItemPrice(select);
+            }
+
+            const input = e.target.closest('[data-action="quantity-change"]');
+            if (input) {
+                calculateTotal();
+            }
+        });
+    }
+
+    // Event delegation for order details modal
+    const orderDetailsContent = document.getElementById('orderDetailsContent');
+    if (orderDetailsContent) {
+        orderDetailsContent.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+            const id = parseInt(btn.dataset.id);
+
+            if (action === 'update-status') updateOrderStatus(id, null, e);
+            if (action === 'download-invoice') downloadInvoice(id);
+            if (action === 'process-payment') {
+                openPaymentModal(
+                    id,
+                    btn.dataset.customer,
+                    parseFloat(btn.dataset.amount),
+                    btn.dataset.email
+                );
+            }
+        });
     }
 });
 

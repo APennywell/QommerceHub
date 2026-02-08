@@ -5,6 +5,7 @@ const { createLimiter } = require("../middleware/rateLimiter");
 const { validate, schemas } = require("../middleware/validation");
 const { upload, getFileUrl, deleteFile } = require("../services/uploadService");
 
+const { requirePermission, PERMISSIONS } = require("../middleware/roles");
 const {
   createInventory,
   getInventory,
@@ -131,7 +132,7 @@ router.put("/:id", auth, validate(schemas.idParam, "params"), validate(schemas.u
 });
 
 // DELETE inventory (soft delete)
-router.delete("/:id", auth, validate(schemas.idParam, "params"), async (req, res) => {
+router.delete("/:id", auth, requirePermission(PERMISSIONS.MANAGE_PRODUCTS), validate(schemas.idParam, "params"), async (req, res) => {
   try {
     const item = await deleteInventory(
       Number(req.params.id),
@@ -203,8 +204,13 @@ router.post("/:id/upload-image", auth, upload.single('image'), async (req, res) 
 
     const imageUrl = getFileUrl(req.file.filename);
 
-    // You could update the inventory record with the image URL here
-    // For now, just return the URL
+    // Persist the image URL to the inventory record
+    const db = require("../db");
+    await db.query(
+      "UPDATE inventory SET image_url = $1 WHERE id = $2 AND tenant_id = $3",
+      [imageUrl, Number(req.params.id), req.tenant.id]
+    );
+
     res.json({
       success: true,
       imageUrl: imageUrl,

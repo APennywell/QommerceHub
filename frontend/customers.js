@@ -1,5 +1,5 @@
 // API_URL is set by theme-loader.js
-const API_URL = window.API_URL || 'http://localhost:5000';
+const API_URL = window.API_URL || 'http://localhost:5001';
 let currentPage = 1;
 let searchQuery = '';
 let isEditing = false;
@@ -37,7 +37,7 @@ function renderCustomersTable(items) {
             <div class="empty-state">
                 <div class="empty-state-icon">👥</div>
                 <p>No customers found</p>
-                <button class="btn btn-success" onclick="openAddModal()">Add Your First Customer</button>
+                <button class="btn btn-success" data-action="add">Add Your First Customer</button>
             </div>
         `;
         return;
@@ -67,9 +67,9 @@ function renderCustomersTable(items) {
                 <td>${date}</td>
                 <td>
                     <button class="btn" style="background: var(--primary); color: white; padding: 6px 12px; margin-right: 5px;"
-                            onclick="editCustomer(${customer.id})">Edit</button>
+                            data-action="edit" data-id="${customer.id}">Edit</button>
                     <button class="btn" style="background: var(--danger); color: white; padding: 6px 12px;"
-                            onclick="deleteCustomer(${customer.id}, event)">Delete</button>
+                            data-action="delete" data-id="${customer.id}">Delete</button>
                 </td>
             </tr>
         `;
@@ -89,9 +89,9 @@ function renderPagination(pagination) {
     }
 
     container.innerHTML = `
-        <button onclick="changePage(${page - 1})" ${page === 1 ? 'disabled' : ''}>Previous</button>
+        <button data-action="prev-page" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
         <span>Page ${page} of ${totalPages}</span>
-        <button onclick="changePage(${page + 1})" ${page === totalPages ? 'disabled' : ''}>Next</button>
+        <button data-action="next-page" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
     `;
 }
 
@@ -243,6 +243,59 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
+    }
+
+    // Static element listeners (migrated from inline handlers)
+    const addCustomerBtn = document.getElementById('addCustomerBtn');
+    if (addCustomerBtn) {
+        addCustomerBtn.addEventListener('click', openAddModal);
+    }
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearch);
+    }
+
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+    }
+
+    const customerForm = document.getElementById('customerForm');
+    if (customerForm) {
+        customerForm.addEventListener('submit', handleCustomerSubmit);
+    }
+
+    // Event delegation for customers table (handles Edit, Delete, Add buttons)
+    const customersTable = document.getElementById('customersTable');
+    if (customersTable) {
+        customersTable.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+            const id = btn.dataset.id;
+
+            if (action === 'edit') editCustomer(parseInt(id));
+            if (action === 'delete') deleteCustomer(parseInt(id), e);
+            if (action === 'add') openAddModal();
+        });
+    }
+
+    // Event delegation for pagination
+    const pagination = document.getElementById('pagination');
+    if (pagination) {
+        pagination.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-action]');
+            if (!btn || btn.disabled) return;
+
+            const action = btn.dataset.action;
+            const page = parseInt(btn.dataset.page);
+
+            if (action === 'prev-page' || action === 'next-page') {
+                changePage(page);
+            }
+        });
     }
 });
 

@@ -40,7 +40,7 @@ function requireAuth() {
  */
 async function handleLogout() {
     const { token } = getAuthData();
-    const API_URL = window.API_URL || 'http://localhost:5000';
+    const API_URL = window.API_URL || 'http://localhost:5001';
 
     try {
         await fetch(`${API_URL}/api/tenants/logout`, {
@@ -66,7 +66,7 @@ async function handleLogout() {
  */
 async function apiRequest(endpoint, options = {}) {
     const { token } = getAuthData();
-    const API_URL = window.API_URL || 'http://localhost:5000';
+    const API_URL = window.API_URL || 'http://localhost:5001';
 
     const response = await fetch(`${API_URL}${endpoint}`, {
         ...options,
@@ -78,11 +78,27 @@ async function apiRequest(endpoint, options = {}) {
     });
 
     if (response.status === 401) {
-        handleLogout();
+        showSessionExpiredWarning();
         return null;
     }
 
     return response;
+}
+
+/**
+ * Show session expired warning before logging out
+ */
+function showSessionExpiredWarning() {
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#ef4444;color:white;padding:16px 24px;border-radius:8px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.15);font-size:14px;';
+    toast.textContent = 'Session expired. Redirecting to login...';
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    }, 2000);
 }
 
 // ============================================
@@ -138,14 +154,21 @@ function renderPagination(pagination, containerId = 'pagination', onPageChange =
         return;
     }
 
-    // Default page change handler uses global changePage function
-    const pageChangeHandler = onPageChange ? onPageChange.name : 'changePage';
+    // Use data-action pattern for CSP compliance (no inline handlers)
+    const handler = onPageChange || window.changePage;
 
     container.innerHTML = `
-        <button onclick="${pageChangeHandler}(${page - 1})" ${page === 1 ? 'disabled' : ''}>Previous</button>
+        <button data-action="prev-page" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
         <span>Page ${page} of ${totalPages}</span>
-        <button onclick="${pageChangeHandler}(${page + 1})" ${page === totalPages ? 'disabled' : ''}>Next</button>
+        <button data-action="next-page" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
     `;
+
+    container.addEventListener('click', function(e) {
+        const btn = e.target.closest('[data-action]');
+        if (!btn || btn.disabled) return;
+        const targetPage = parseInt(btn.dataset.page);
+        if (handler) handler(targetPage);
+    });
 }
 
 /**

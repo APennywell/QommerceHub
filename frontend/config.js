@@ -3,15 +3,9 @@
 
 (function() {
     // Auto-detect API URL based on current environment
+    // Since the frontend is served by the same Express server,
+    // window.location.origin always gives us the correct URL and port.
     function getApiUrl() {
-        const hostname = window.location.hostname;
-
-        // Local development
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            return 'http://localhost:5000';
-        }
-
-        // Production - use same origin (Render serves frontend from backend)
         return window.location.origin;
     }
 

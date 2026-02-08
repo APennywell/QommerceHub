@@ -7,7 +7,7 @@ const poolConfig = process.env.DATABASE_URL
         connectionString: process.env.DATABASE_URL,
         // Always use SSL with DATABASE_URL (Railway/Heroku require it)
         ssl: { rejectUnauthorized: false },
-        max: 20,
+        max: parseInt(process.env.DB_POOL_MAX || '20'),
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 10000,
     }
@@ -17,7 +17,7 @@ const poolConfig = process.env.DATABASE_URL
         database: process.env.DB_NAME,
         password: process.env.DB_PASSWORD,
         port: process.env.DB_PORT,
-        max: 20,
+        max: parseInt(process.env.DB_POOL_MAX || '20'),
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 10000,
     };

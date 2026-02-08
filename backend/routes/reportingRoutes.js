@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
+const { requirePermission, PERMISSIONS } = require('../middleware/roles');
 const reportingService = require('../services/reportingService');
 const path = require('path');
 
@@ -23,7 +24,7 @@ const path = require('path');
  *       200:
  *         description: CSV file download
  */
-router.get('/sales/csv', auth, async (req, res) => {
+router.get('/sales/csv', auth, requirePermission(PERMISSIONS.EXPORT_DATA), async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
 
@@ -59,7 +60,7 @@ router.get('/sales/csv', auth, async (req, res) => {
  *       200:
  *         description: Excel file download
  */
-router.get('/inventory/excel', auth, async (req, res) => {
+router.get('/inventory/excel', auth, requirePermission(PERMISSIONS.EXPORT_DATA), async (req, res) => {
     try {
         const result = await reportingService.generateInventoryReportExcel(req.tenant.id);
 
@@ -90,7 +91,7 @@ router.get('/inventory/excel', auth, async (req, res) => {
  *       200:
  *         description: CSV file download
  */
-router.get('/customers/csv', auth, async (req, res) => {
+router.get('/customers/csv', auth, requirePermission(PERMISSIONS.EXPORT_DATA), async (req, res) => {
     try {
         const result = await reportingService.generateCustomerReportCSV(req.tenant.id);
 

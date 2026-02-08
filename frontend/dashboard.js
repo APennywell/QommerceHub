@@ -1,5 +1,5 @@
 // API_URL is set by theme-loader.js (use window.API_URL to avoid redeclaration)
-const API_URL = window.API_URL || 'http://localhost:5000';
+const API_URL = window.API_URL || 'http://localhost:5001';
 let currentPage = 1;
 let searchQuery = '';
 let isEditing = false;
@@ -44,7 +44,7 @@ async function loadInventory(page = 1, search = '') {
             `<div class="empty-state">
                 <div class="empty-state-icon">⚠️</div>
                 <p>${errorMessage}</p>
-                <button class="btn btn-primary" onclick="loadInventory()">Try Again</button>
+                <button class="btn btn-primary" data-action="retry">Try Again</button>
             </div>`;
     }
 }
@@ -58,7 +58,7 @@ function renderInventoryTable(items) {
             <div class="empty-state">
                 <div class="empty-state-icon">📦</div>
                 <p>No products found</p>
-                <button class="btn btn-success" onclick="openAddModal()">Add Your First Product</button>
+                <button class="btn btn-success" data-action="add">Add Your First Product</button>
             </div>
         `;
         return;
@@ -100,9 +100,9 @@ function renderInventoryTable(items) {
                 <td><span class="badge badge-${statusClass}">${status}</span></td>
                 <td>
                     <button class="btn" style="background: var(--primary); color: white; padding: 6px 12px; margin-right: 5px;"
-                            onclick="editProduct(${item.id})">Edit</button>
+                            data-action="edit" data-id="${item.id}">Edit</button>
                     <button class="btn" style="background: var(--danger); color: white; padding: 6px 12px;"
-                            onclick="deleteProduct(${item.id}, event)">Delete</button>
+                            data-action="delete" data-id="${item.id}">Delete</button>
                 </td>
             </tr>
         `;
@@ -127,9 +127,9 @@ function renderPagination(pagination) {
     }
 
     let html = `
-        <button onclick="changePage(${page - 1})" ${page === 1 ? 'disabled' : ''}>Previous</button>
+        <button data-action="prev-page" data-page="${page - 1}" ${page === 1 ? 'disabled' : ''}>Previous</button>
         <span>Page ${page} of ${totalPages}</span>
-        <button onclick="changePage(${page + 1})" ${page === totalPages ? 'disabled' : ''}>Next</button>
+        <button data-action="next-page" data-page="${page + 1}" ${page === totalPages ? 'disabled' : ''}>Next</button>
     `;
 
     container.innerHTML = html;
@@ -362,6 +362,70 @@ document.addEventListener('DOMContentLoaded', function() {
         logoutBtn.addEventListener('click', handleLogout);
     }
 
+    // Static element listeners (migrated from inline handlers)
+    const addProductBtn = document.getElementById('addProductBtn');
+    if (addProductBtn) {
+        addProductBtn.addEventListener('click', openAddModal);
+    }
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearch);
+    }
+
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModal);
+    }
+
+    const productForm = document.getElementById('productForm');
+    if (productForm) {
+        productForm.addEventListener('submit', handleProductSubmit);
+    }
+
+    const removeImageBtn = document.getElementById('removeImageBtn');
+    if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', removeImage);
+    }
+
+    const productImageInput = document.getElementById('productImage');
+    if (productImageInput) {
+        productImageInput.addEventListener('change', previewImage);
+    }
+
+    // Event delegation for inventory table (handles Edit, Delete, Add, Retry buttons)
+    const inventoryTable = document.getElementById('inventoryTable');
+    if (inventoryTable) {
+        inventoryTable.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+
+            const action = btn.dataset.action;
+            const id = btn.dataset.id;
+
+            if (action === 'edit') editProduct(parseInt(id));
+            if (action === 'delete') deleteProduct(parseInt(id), e);
+            if (action === 'add') openAddModal();
+            if (action === 'retry') loadInventory();
+        });
+    }
+
+    // Event delegation for pagination
+    const pagination = document.getElementById('pagination');
+    if (pagination) {
+        pagination.addEventListener('click', function(e) {
+            const btn = e.target.closest('[data-action]');
+            if (!btn || btn.disabled) return;
+
+            const action = btn.dataset.action;
+            const page = parseInt(btn.dataset.page);
+
+            if (action === 'prev-page' || action === 'next-page') {
+                changePage(page);
+            }
+        });
+    }
+
     // Check for first login onboarding
     checkOnboarding();
 });
@@ -382,7 +446,7 @@ function showOnboardingModal() {
                 <div class="modal-content" style="max-width: 600px;">
                     <div class="modal-header">
                         <h2 style="color: var(--primary);">Welcome to QommerceHub!</h2>
-                        <button class="modal-close" onclick="closeOnboarding()">&times;</button>
+                        <button class="modal-close" id="onboardingCloseBtn">&times;</button>
                     </div>
                     <div style="text-align: center; margin-bottom: 20px;">
                         <div style="font-size: 4em; margin-bottom: 10px;">🎉</div>
@@ -394,28 +458,28 @@ function showOnboardingModal() {
                         <h3 style="margin-bottom: 15px; color: var(--gray-700);">Quick Start Checklist</h3>
                         <div class="onboarding-checklist">
                             <label class="checklist-item">
-                                <input type="checkbox" id="checkProducts" onchange="updateChecklist()">
+                                <input type="checkbox" id="checkProducts">
                                 <span>Add your first products</span>
                             </label>
                             <label class="checklist-item">
-                                <input type="checkbox" id="checkCustomers" onchange="updateChecklist()">
+                                <input type="checkbox" id="checkCustomers">
                                 <span>Add your first customer</span>
                             </label>
                             <label class="checklist-item">
-                                <input type="checkbox" id="checkSettings" onchange="updateChecklist()">
+                                <input type="checkbox" id="checkSettings">
                                 <span>Customize your store</span>
                             </label>
                             <label class="checklist-item">
-                                <input type="checkbox" id="checkAnalytics" onchange="updateChecklist()">
+                                <input type="checkbox" id="checkAnalytics">
                                 <span>View analytics dashboard</span>
                             </label>
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-success" onclick="startWithProducts()" style="flex: 1;">
+                        <button class="btn btn-success" id="addProductsBtn" style="flex: 1;">
                             Add Products
                         </button>
-                        <button class="btn" onclick="closeOnboarding()" style="flex: 1; background: var(--gray-200); color: var(--gray-700);">
+                        <button class="btn" id="exploreFirstBtn" style="flex: 1; background: var(--gray-200); color: var(--gray-700);">
                             Explore First
                         </button>
                     </div>
@@ -453,6 +517,15 @@ function showOnboardingModal() {
             </style>
         `;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Attach event listeners to dynamically created elements
+        document.getElementById('onboardingCloseBtn').addEventListener('click', closeOnboarding);
+        document.getElementById('addProductsBtn').addEventListener('click', startWithProducts);
+        document.getElementById('exploreFirstBtn').addEventListener('click', closeOnboarding);
+        document.getElementById('checkProducts').addEventListener('change', updateChecklist);
+        document.getElementById('checkCustomers').addEventListener('change', updateChecklist);
+        document.getElementById('checkSettings').addEventListener('change', updateChecklist);
+        document.getElementById('checkAnalytics').addEventListener('change', updateChecklist);
     } else {
         document.getElementById('onboardingModal').classList.add('active');
     }
@@ -493,11 +566,9 @@ async function completeOnboarding() {
         });
         // Update local tenant data
         tenant.firstLogin = false;
-        const authData = JSON.parse(localStorage.getItem('auth') || '{}');
-        if (authData.tenant) {
-            authData.tenant.firstLogin = false;
-            localStorage.setItem('auth', JSON.stringify(authData));
-        }
+        const tenantData = JSON.parse(localStorage.getItem('tenant') || '{}');
+        tenantData.firstLogin = false;
+        localStorage.setItem('tenant', JSON.stringify(tenantData));
     } catch (err) {
         console.error('Failed to complete onboarding:', err);
     }

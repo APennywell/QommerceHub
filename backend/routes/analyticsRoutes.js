@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const analyticsService = require('../services/analyticsService');
 const auth = require('../middleware/auth');
+const { requirePermission, PERMISSIONS } = require('../middleware/roles');
 
 /**
  * @swagger
@@ -24,7 +25,7 @@ const auth = require('../middleware/auth');
  *       401:
  *         description: Unauthorized
  */
-router.get('/sales', auth, async (req, res) => {
+router.get('/sales', auth, requirePermission(PERMISSIONS.VIEW_ANALYTICS), async (req, res) => {
     try {
         const days = parseInt(req.query.days) || 30;
         const analytics = await analyticsService.getSalesAnalytics(req.tenant.id, { days });

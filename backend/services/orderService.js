@@ -68,7 +68,7 @@ async function createOrder({ tenantId, customerId, items, notes }) {
             orderId: completeOrder.id,
             orderTotal: completeOrder.total_amount,
             items: completeOrder.items
-        }).catch(err => console.error('Failed to send order confirmation email:', err.message));
+        }).catch(err => console.error(`[EMAIL ERROR] Order #${completeOrder.id} confirmation failed:`, err.message));
 
         return completeOrder;
 

@@ -13,7 +13,7 @@
             <img src="assets/logo.svg" alt="QommerceHub" style="height: 32px; vertical-align: middle; margin-right: 8px;">
             <span>QommerceHub</span>
         </div>
-        <div style="display: flex; gap: 20px; align-items: center;">
+        <div class="nav-links" style="display: flex; gap: 20px; align-items: center;">
             <a href="dashboard.html" style="color: var(--gray-700); text-decoration: none;">Inventory</a>
             <a href="customers.html" style="color: var(--gray-700); text-decoration: none;">Customers</a>
             <a href="orders.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Orders</a>
@@ -29,11 +29,11 @@
         <div class="card">
             <div class="card-header">
                 <h2 class="card-title">📦 Order Management</h2>
-                <button class="btn btn-success" onclick="openCreateOrderModal()">+ New Order</button>
+                <button class="btn btn-success" id="newOrderBtn">+ New Order</button>
             </div>
 
             <div style="margin-bottom: 20px;">
-                <select id="statusFilter" onchange="handleStatusFilter()" style="padding: 10px; border-radius: 6px; border: 2px solid var(--gray-200);">
+                <select id="statusFilter" style="padding: 10px; border-radius: 6px; border: 2px solid var(--gray-200);">
                     <option value="">All Orders</option>
                     <option value="pending">Pending</option>
                     <option value="processing">Processing</option>
@@ -42,8 +42,8 @@
                 </select>
             </div>
 
-            <div id="ordersTable">
-                <div class="loading">Loading orders...</div>
+            <div id="ordersTable" class="table-responsive" aria-live="polite">
+                <div class="loading" role="status" aria-label="Loading">Loading orders...</div>
             </div>
 
             <div class="pagination" id="pagination"></div>
@@ -51,15 +51,15 @@
     </div>
 
     <!-- Create Order Modal -->
-    <div id="createOrderModal" class="modal">
-        <div class="modal-content" style="max-width: 700px;">
+    <div id="createOrderModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="createOrderTitle">
+        <div class="modal-content modal-content-wide">
             <div class="modal-header">
-                <h2>Create New Order</h2>
-                <button class="modal-close" onclick="closeCreateOrderModal()">&times;</button>
+                <h2 id="createOrderTitle">Create New Order</h2>
+                <button class="modal-close" id="closeCreateOrderBtn">&times;</button>
             </div>
-            <form id="orderForm" onsubmit="handleOrderSubmit(event)">
+            <form id="orderForm">
                 <div class="form-group">
-                    <label>Customer *</label>
+                    <label for="orderCustomer">Customer *</label>
                     <select id="orderCustomer" required>
                         <option value="">Select Customer</option>
                     </select>
@@ -70,11 +70,11 @@
                     <div id="orderItems">
                         <!-- Items will be added here -->
                     </div>
-                    <button type="button" class="btn" style="background: var(--primary); color: white;" onclick="addOrderItem()">+ Add Item</button>
+                    <button type="button" class="btn" style="background: var(--primary); color: white;" id="addOrderItemBtn">+ Add Item</button>
                 </div>
 
                 <div class="form-group">
-                    <label>Notes</label>
+                    <label for="orderNotes">Notes</label>
                     <textarea id="orderNotes" rows="2"></textarea>
                 </div>
 
@@ -88,24 +88,24 @@
     </div>
 
     <!-- Order Details Modal -->
-    <div id="orderDetailsModal" class="modal">
+    <div id="orderDetailsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="orderDetailsTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Order Details</h2>
-                <button class="modal-close" onclick="closeOrderDetailsModal()">&times;</button>
+                <h2 id="orderDetailsTitle">Order Details</h2>
+                <button class="modal-close" id="closeOrderDetailsBtn">&times;</button>
             </div>
             <div id="orderDetailsContent">
-                <div class="loading">Loading...</div>
+                <div class="loading" role="status" aria-label="Loading">Loading...</div>
             </div>
         </div>
     </div>
 
     <!-- Payment Modal -->
-    <div id="paymentModal" class="modal">
+    <div id="paymentModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="paymentTitle">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Process Payment</h2>
-                <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+                <h2 id="paymentTitle">Process Payment</h2>
+                <button class="modal-close" id="closePaymentBtn">&times;</button>
             </div>
             <div id="paymentContent">
                 <div style="padding: 20px;">
@@ -123,8 +123,8 @@
                     </div>
 
                     <div style="margin-bottom: 20px;">
-                        <label><strong>Payment Method:</strong></label>
-                        <select id="paymentMethod" onchange="togglePaymentMethod()" style="width: 100%; padding: 10px; margin-top: 10px; border: 2px solid var(--gray-200); border-radius: 8px;">
+                        <label for="paymentMethod"><strong>Payment Method:</strong></label>
+                        <select id="paymentMethod" style="width: 100%; padding: 10px; margin-top: 10px; border: 2px solid var(--gray-200); border-radius: 8px;">
                             <option value="card">Credit Card</option>
                             <option value="cash">Cash</option>
                             <option value="bank_transfer">Bank Transfer</option>
@@ -133,20 +133,20 @@
 
                     <!-- Stripe Card Element Container -->
                     <div id="cardElementContainer" style="margin-bottom: 20px;">
-                        <label><strong>Card Details:</strong></label>
+                        <label for="card-element"><strong>Card Details:</strong></label>
                         <div id="card-element" style="margin-top: 10px; padding: 12px; background: white; border: 2px solid var(--gray-200); border-radius: 8px;"></div>
                         <div id="card-errors" style="color: var(--danger); margin-top: 8px; font-size: 14px;"></div>
                     </div>
 
                     <!-- Cash/Bank Transfer Notes -->
                     <div id="offlinePaymentContainer" style="display: none; margin-bottom: 20px;">
-                        <label><strong>Payment Notes:</strong></label>
+                        <label for="paymentNotes"><strong>Payment Notes:</strong></label>
                         <textarea id="paymentNotes" placeholder="Enter payment reference or notes..." style="width: 100%; padding: 10px; margin-top: 10px; border: 2px solid var(--gray-200); border-radius: 8px; min-height: 80px;"></textarea>
                     </div>
 
                     <div id="paymentError" style="background: var(--danger); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;"></div>
 
-                    <button id="paymentButton" class="btn btn-success" style="width: 100%;" onclick="processPayment()">Process Payment</button>
+                    <button id="paymentButton" class="btn btn-success" style="width: 100%;">Process Payment</button>
                 </div>
             </div>
         </div>

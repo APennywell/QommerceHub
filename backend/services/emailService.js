@@ -336,7 +336,7 @@ async function sendVerificationEmail({ email, storeName, verificationUrl }) {
 async function sendWelcomeEmail({ email, storeName }) {
     try {
         const transporter = await initializeTransporter();
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5000';
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5001';
 
         const mailOptions = {
             from: process.env.EMAIL_FROM || '"QommerceHub" <noreply@qommercehub.com>',

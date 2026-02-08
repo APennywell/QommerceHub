@@ -1,7 +1,7 @@
 // Theme Loader - Loads and applies custom theme on page load
 // Set API_URL globally so other scripts can use it without redeclaring
 // NOTE: Do NOT use 'const API_URL' here - it would conflict with page-specific JS files
-window.API_URL = window.API_URL || 'http://localhost:5000';
+window.API_URL = window.API_URL || window.location.origin;
 
 // Default theme values
 const DEFAULT_THEME = {
