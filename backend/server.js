@@ -1,11 +1,8 @@
 require("dotenv").config();
 
-// Handle unhandled promise rejections (critical for production stability)
+// Handle unhandled promise rejections (log but don't crash — let health check report issues)
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  if (process.env.NODE_ENV === 'production') {
-    process.exit(1);
-  }
 });
 
 process.on('uncaughtException', (err) => {

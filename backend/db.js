@@ -24,14 +24,15 @@ const poolConfig = process.env.DATABASE_URL
 
 const pool = new Pool(poolConfig);
 
+// Test connection (non-blocking — pool retries automatically on next query)
 pool.connect()
-    .then(() => console.log('Connected to PostgreSQL'))
+    .then(client => {
+        console.log('Connected to PostgreSQL');
+        client.release();
+    })
     .catch(err => {
-        console.error('Database connection error', err.stack);
-        // Exit in production so Render knows the deployment failed
-        if (process.env.NODE_ENV === 'production') {
-            process.exit(1);
-        }
+        console.error('Initial database connection failed:', err.message);
+        console.error('The pool will retry automatically on next query');
     });
 
 module.exports = pool;
